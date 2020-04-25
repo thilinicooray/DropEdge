@@ -185,9 +185,13 @@ class GCNModel(nn.Module):
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
+        self.mu_midlayer = nn.ModuleList()
+        self.var_midlayer = nn.ModuleList()
         for i in range(nhidlayer):
             gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
+            self.mu_midlayer.append(gcb)
+            self.var_midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
         self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
@@ -235,13 +239,15 @@ class GCNModel(nn.Module):
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
+            mui = self.mu_midlayer[i]
+            logvari = self.var_midlayer[i]
 
             x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
-            mu = self.mu(x, adj)
-            logvar = self.logvar(x, adj)
+            mu = mui(x, adj)
+            logvar = logvari(x, adj)
             z = self.reparameterize(mu, logvar)
             adj1 = self.dc(z)
 
@@ -261,7 +267,7 @@ class GCNModel(nn.Module):
 
 
         # output, no relu and dropput here.
-        x = self.outgc(x, adj + adj_con)
+        x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
         return gen_node, adj_con, mu, logvar, x
 
