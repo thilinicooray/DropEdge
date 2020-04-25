@@ -275,7 +275,7 @@ for epoch in range(args.epochs):
         outputs = train(epoch, train_adj, train_fea, input_idx_train, val_adj, val_fea)
 
     if args.debug and epoch % 1 == 0:
-        '''print('Epoch: {:04d}'.format(epoch + 1),
+        print('Epoch: {:04d}'.format(epoch + 1),
               'loss_train: {:.4f}'.format(outputs[0]),
               'acc_train: {:.4f}'.format(outputs[1]),
               'loss_val: {:.4f}'.format(outputs[2]),
@@ -283,7 +283,7 @@ for epoch in range(args.epochs):
               'cur_lr: {:.5f}'.format(outputs[4]),
               's_time: {:.4f}s'.format(sampling_t),
               't_time: {:.4f}s'.format(outputs[5]),
-              'v_time: {:.4f}s'.format(outputs[6]))'''
+              'v_time: {:.4f}s'.format(outputs[6]))
     
     if args.no_tensorboard is False:
         tb_writer.add_scalars('Loss', {'train': outputs[0], 'val': outputs[2]}, epoch)
