@@ -184,7 +184,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
                                 mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
         node_ae_loss = loss_function(preds=node_gen, labels=train_fea,
                                 mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
-        loss_train = loss_nc + 0.5*ae_loss + 0.5*node_ae_loss
+        loss_train = loss_nc + 0.5*ae_loss + 0.1*node_ae_loss
         acc_train = accuracy(output[idx_train], labels[idx_train])
 
     loss_train.backward()
