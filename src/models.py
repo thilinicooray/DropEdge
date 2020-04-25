@@ -252,7 +252,7 @@ class GCNModel(nn.Module):
             adj_con = F.softmax(adj_con +masked_adj, dim=1)
 
         # output, no relu and dropput here.
-        x = self.outgc(x, adj)
+        x = self.outgc(torch.cat([x, fea],-1), adj)
         x = F.log_softmax(x, dim=1)
         return adj_con, mu, logvar, x
 
