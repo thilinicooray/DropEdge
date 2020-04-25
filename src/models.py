@@ -209,6 +209,7 @@ class GCNModel(nn.Module):
             midgc = self.midlayer[i]
             x = midgc(x, adj)
             x = self.norm(x)
+            x = F.dropout(x, self.dropout, training=self.training)
         # output, no relu and dropput here.
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
