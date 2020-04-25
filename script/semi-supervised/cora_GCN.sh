@@ -8,13 +8,13 @@ python ./src/train_new.py \
     --type resgcn \
     --nhiddenlayer 2 \
     --nbaseblocklayer 0 \
-    --hidden 128 \
+    --hidden 32 \
     --epoch 400 \
     --lr 0.007 \
     --weight_decay 1e-05 \
     --early_stopping 400 \
     --sampling_percent 1.0 \
-    --dropout 0.5 \
+    --dropout 0.8 \
     --normalization AugNormAdj --task_type semi \
      \
     
