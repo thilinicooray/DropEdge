@@ -90,6 +90,7 @@ class GCNModel(nn.Module):
         # Dense is not supported now.
         # for i in xrange(nhidlayer):
         for i in range(nhidlayer):
+            print('added')
             gcb = self.BASEBLOCK(in_features=baseblockinput,
                                  out_features=nhid,
                                  nbaselayer=nbaselayer,
@@ -127,6 +128,7 @@ class GCNModel(nn.Module):
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
+            print('passed')
             midgc = self.midlayer[i]
             x = midgc(x, adj)
         # output, no relu and dropput here.
