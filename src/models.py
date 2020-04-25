@@ -228,7 +228,7 @@ class GCNModel(nn.Module):
 
         a1 = self.node_regen(z, adj_con.t())
         zero_vec = -9e15*torch.ones_like(a1)
-        masked_nodes = torch.where(x > 0, a1, zero_vec)
+        masked_nodes = torch.where(fea > 0, a1, zero_vec)
         gen_node = F.softmax(masked_nodes, dim=1)
 
         # mid block connections
