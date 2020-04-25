@@ -186,7 +186,7 @@ class GCNModel(nn.Module):
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid+nfeat, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
@@ -195,8 +195,6 @@ class GCNModel(nn.Module):
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
-        self.mu1 = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
-        self.logvar1 = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
         self.node_regen = GraphConvolutionBS(nhid, nfeat, activation, withbn, withloop)
@@ -222,11 +220,6 @@ class GCNModel(nn.Module):
         z = self.reparameterize(mu, logvar)
         adj1 = self.dc(z)
 
-        mu1 = self.mu1(x, adj)
-        logvar1 = self.logvar1(x, adj)
-        z = self.reparameterize(mu1, logvar1)
-        adj1 = adj1 +self.dc(z)
-
 
         #get masked new adj
         zero_vec = -9e15*torch.ones_like(adj1)
@@ -243,7 +236,7 @@ class GCNModel(nn.Module):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
 
-            x = midgc(x, adj)
+            x = midgc(torch.cat([x, fea],-1), adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
@@ -251,11 +244,6 @@ class GCNModel(nn.Module):
             logvar = self.logvar(x, adj)
             z = self.reparameterize(mu, logvar)
             adj1 = self.dc(z)
-
-            mu1 = self.mu1(x, adj)
-            logvar1 = self.logvar1(x, adj)
-            z = self.reparameterize(mu1, logvar1)
-            adj1 = adj1 +self.dc(z)
 
 
             #get masked new adj
@@ -266,7 +254,7 @@ class GCNModel(nn.Module):
         # output, no relu and dropput here.
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        return adj_con, mu + mu1, logvar + logvar1, x
+        return gen_node, adj_con, mu, logvar, x
 
 class GCNModel_org(nn.Module):
     """
