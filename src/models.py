@@ -232,8 +232,8 @@ class GCNModel(nn.Module):
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
-            mu = self.mu(x, adj)
-            logvar = self.logvar(x, adj)
+            mu = self.mu(x, adj+ adj_con)
+            logvar = self.logvar(x, adj+ adj_con)
             z = self.reparameterize(mu, logvar)
             adj1 = self.dc(z)
 
@@ -245,7 +245,7 @@ class GCNModel(nn.Module):
 
 
         # output, no relu and dropput here.
-        x = self.outgc(x, adj + adj_con)
+        x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
         return adj_con, mu, logvar, x
 
