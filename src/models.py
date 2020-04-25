@@ -294,7 +294,7 @@ class GCNModel_org(nn.Module):
                            is "add", for others the default is "concat".
         :param mixmode: enable cpu-gpu mix mode. If true, put the inputlayer to cpu.
         """
-        super(GCNModel, self).__init__()
+        super(GCNModel_org, self).__init__()
 
         self.dropout = dropout
 
