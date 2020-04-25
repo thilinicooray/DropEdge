@@ -228,7 +228,7 @@ class GCNModel(nn.Module):
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
-            if i  == 3:
+            if i  == 2 or i==5:
                 x = midgc(x, adj+adj_con)
             else:
                 x = midgc(x, adj)
