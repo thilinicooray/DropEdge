@@ -197,6 +197,8 @@ class GCNModel(nn.Module):
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
+        self.node_regen = GraphConvolutionBS(nhid, nfeat, activation, withbn, withloop)
+
     def reset_parameters(self):
         pass
 
@@ -224,7 +226,10 @@ class GCNModel(nn.Module):
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
         adj_con = F.softmax(masked_adj, dim=1)
 
-        #node gen ----
+        a1 = self.node_regen(z, adj_con.t())
+        zero_vec = -9e15*torch.ones_like(a1)
+        masked_nodes = torch.where(x > 0, a1, zero_vec)
+        gen_node = F.softmax(masked_nodes, dim=1)
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
@@ -246,11 +251,16 @@ class GCNModel(nn.Module):
             masked_adj = torch.where(adj > 0, adj1, zero_vec)
             adj_con =   F.softmax(adj_con +masked_adj, dim=1)
 
+            a1 = self.node_regen(z, adj_con.t())
+            zero_vec = -9e15*torch.ones_like(a1)
+            masked_nodes = torch.where(x > 0, a1, zero_vec)
+            gen_node = F.softmax(gen_node +masked_nodes, dim=1)
+
 
         # output, no relu and dropput here.
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        return adj_con, mu, logvar, x
+        return gen_node, adj_con, mu, logvar, x
 
 class GCNModel_org(nn.Module):
     """
