@@ -195,7 +195,7 @@ class GCNModel(nn.Module):
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
-        self.nodegen = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+        self.node_regen = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
     def reset_parameters(self):
