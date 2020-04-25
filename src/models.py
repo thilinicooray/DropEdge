@@ -191,6 +191,7 @@ class GCNModel(nn.Module):
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
         self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
+        self.norm = PairNorm()
 
 
 
@@ -207,6 +208,7 @@ class GCNModel(nn.Module):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
             x = midgc(x, adj)
+            x = self.norm(x)
         # output, no relu and dropput here.
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
