@@ -224,6 +224,8 @@ class GCNModel(nn.Module):
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
         adj_con = F.softmax(masked_adj, dim=1)
 
+        node gen ----
+
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
