@@ -5,7 +5,7 @@ python ./src/train_new.py \
     --datapath data// \
     --seed 42 \
     --dataset cora \
-    --type densegcn \
+    --type inceptiongcn \
     --nhiddenlayer 7 \
     --nbaseblocklayer 0 \
     --hidden 128 \
