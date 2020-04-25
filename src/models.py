@@ -336,7 +336,7 @@ class GCNModel_org(nn.Module):
             midgc = self.midlayer[i]
 
             x = midgc(x, adj)
-            x = self.norm(x)
+            #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
 
