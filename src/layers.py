@@ -481,16 +481,4 @@ class PairNorm(nn.Module):
 
         return x
 
-"""
-    helpers
-"""
-from torch_scatter import scatter_max, scatter_add
-def softmax(src, index, num_nodes=None):
-    """
-        sparse softmax
-    """
-    num_nodes = index.max().item() + 1 if num_nodes is None else num_nodes
-    out = src - scatter_max(src, index, dim=0, dim_size=num_nodes)[0][index]
-    out = out.exp()
-    out = out / (scatter_add(out, index, dim=0, dim_size=num_nodes)[index] + 1e-16)
-    return out
+
