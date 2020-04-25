@@ -5,9 +5,9 @@ python ./src/train_new.py \
     --datapath data// \
     --seed 42 \
     --dataset cora \
-    --type inceptiongcn \
+    --type mutigcn \
     --nhiddenlayer 15 \
-    --nbaseblocklayer 0 \
+    --nbaseblocklayer 1 \
     --hidden 128 \
     --epoch 400 \
     --lr 0.007 \
