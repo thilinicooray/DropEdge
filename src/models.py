@@ -193,15 +193,26 @@ class GCNModel(nn.Module):
         self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
         self.norm = PairNorm()
 
-
+        self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+        self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+        self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
     def reset_parameters(self):
         pass
+
+    def reparameterize(self, mu, logvar):
+        if self.training:
+            std = torch.exp(logvar)
+            eps = torch.randn_like(std)
+            return eps.mul(std).add_(mu)
+        else:
+            return mu
 
     def forward(self, fea, adj):
         x = self.ingc(fea, adj)
 
         x = F.dropout(x, self.dropout, training=self.training)
+        adj_con = torch.zeros_like(adj)
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
@@ -210,10 +221,25 @@ class GCNModel(nn.Module):
             x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
+            #vae
+            mu = self.mu(x, adj)
+            logvar = self.logvar(x, adj)
+            z = self.reparameterize(mu, logvar)
+            adj1 = self.dc(z)
+
+
+            #get masked new adj
+            zero_vec = -9e15*torch.ones_like(adj1)
+            masked_adj = torch.where(adj > 0, adj1, zero_vec)
+            adj1 += F.softmax(masked_adj, dim=1)
+            adj = adj + adj1
+
+
+
         # output, no relu and dropput here.
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        return x
+        return adj1, mu, logvar, x
 
 # Modified GCN
 class GCNFlatRes(nn.Module):
@@ -241,5 +267,19 @@ class GCNFlatRes(nn.Module):
         x = self.reslayer(x, adj)
         # x = F.dropout(x, self.dropout, training=self.training)
         return F.log_softmax(x, dim=1)
+
+class InnerProductDecoder(nn.Module):
+    """Decoder for using inner product for prediction."""
+
+    def __init__(self, dropout, act=torch.sigmoid):
+        super(InnerProductDecoder, self).__init__()
+        self.dropout = dropout
+        self.act = act
+
+    def forward(self, z):
+        z = F.dropout(z, self.dropout, training=self.training)
+        adj = self.act(torch.mm(z, z.t()))
+        return adj
+
 
 

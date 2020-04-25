@@ -173,13 +173,16 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
     t = time.time()
     model.train()
     optimizer.zero_grad()
-    output = model(train_fea, train_adj)
+    recovered, mu, logvar,output = model(train_fea, train_adj)
     # special for reddit
     if sampler.learning_type == "inductive":
-        loss_train = F.nll_loss(output, labels[idx_train])
+        #loss_train = F.nll_loss(output, labels[idx_train])
         acc_train = accuracy(output, labels[idx_train])
     else:
-        loss_train = F.nll_loss(output[idx_train], labels[idx_train])
+        loss_nc = F.nll_loss(output[idx_train], labels[idx_train])
+        ae_loss = loss_function(preds=recovered[idx_train], labels=train_adj,
+                                mu=mu[idx_train], logvar=logvar[idx_train], n_nodes=train_adj.size(0))
+        loss_train = loss_nc + 0.1*ae_loss
         acc_train = accuracy(output[idx_train], labels[idx_train])
 
     loss_train.backward()
@@ -197,7 +200,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         #    # Evaluate validation set performance separately,
         #    # deactivates dropout during validation run.
         model.eval()
-        output = model(val_fea, val_adj)
+        recovered, mu, logvar,output = model(val_fea, val_adj)
         loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
         acc_val = accuracy(output[idx_val], labels[idx_val]).item()
         if sampler.dataset == "reddit":
@@ -215,7 +218,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
 
 def test(test_adj, test_fea):
     model.eval()
-    output = model(test_fea, test_adj)
+    recovered, mu, logvar,output = model(test_fea, test_adj)
     loss_test = F.nll_loss(output[idx_test], labels[idx_test])
     acc_test = accuracy(output[idx_test], labels[idx_test])
     auc_test = roc_auc_compute_fn(output[idx_test], labels[idx_test])
@@ -226,6 +229,18 @@ def test(test_adj, test_fea):
               "accuracy= {:.4f}".format(acc_test.item()))'''
         print("accuracy=%.5f" % (acc_test.item()))
     return (loss_test.item(), acc_test.item())
+
+def loss_function(preds, labels, mu, logvar, n_nodes):
+    cost = F.binary_cross_entropy_with_logits(preds, labels)
+
+    # see Appendix B from VAE paper:
+    # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
+    # https://arxiv.org/abs/1312.6114
+    # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+    KLD = -0.5 / n_nodes * torch.mean(torch.sum(
+        1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2), 1))
+    return cost + KLD
+
 
 
 # Train model
