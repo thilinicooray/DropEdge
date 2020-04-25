@@ -308,7 +308,7 @@ class GCNModel_org(nn.Module):
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid + nfeat, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
@@ -341,7 +341,7 @@ class GCNModel_org(nn.Module):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
 
-            x = midgc(x, adj)
+            x = midgc(torch.cat([x, fea],-1), adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
