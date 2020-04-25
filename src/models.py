@@ -233,7 +233,7 @@ class GCNModel(nn.Module):
             else:
                 x = midgc(x, adj)
             #x = midgc(x, adj)
-            #x = self.norm(x)
+            x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
             mu = self.mu(x, adj)
