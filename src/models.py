@@ -228,12 +228,9 @@ class GCNModel(nn.Module):
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
-            if i == 2:
-                x = midgc(x, adj+adj_con)
-            else:
-                x = midgc(x, adj)
-            #x = midgc(x, adj)
-            x = self.norm(x)
+
+            x = midgc(x, adj)
+            #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
             mu = self.mu(x, adj)
