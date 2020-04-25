@@ -6,8 +6,8 @@ python ./src/train_new.py \
     --seed 42 \
     --dataset cora \
     --type mutigcn \
-    --nhiddenlayer 15 \
-    --nbaseblocklayer 1 \
+    --nhiddenlayer 1 \
+    --nbaseblocklayer 6 \
     --hidden 128 \
     --epoch 400 \
     --lr 0.007 \
