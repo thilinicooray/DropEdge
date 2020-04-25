@@ -173,7 +173,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
     t = time.time()
     model.train()
     optimizer.zero_grad()
-    node_gen, recovered, mu, logvar,output = model(train_fea, train_adj)
+    recovered, mu, logvar,output = model(train_fea, train_adj)
     # special for reddit
     if sampler.learning_type == "inductive":
         #loss_train = F.nll_loss(output, labels[idx_train])
@@ -182,9 +182,8 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         loss_nc = F.nll_loss(output[idx_train], labels[idx_train])
         ae_loss = loss_function(preds=recovered, labels=train_adj,
                                 mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
-        node_ae_loss = loss_function(preds=node_gen, labels=train_fea,
-                                mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
-        loss_train = loss_nc + 0.5*ae_loss + 0.1*node_ae_loss
+
+        loss_train = loss_nc + 0.5*ae_loss
         acc_train = accuracy(output[idx_train], labels[idx_train])
 
     loss_train.backward()
@@ -212,7 +211,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         acc_val = 0'''
 
     model.eval()
-    nodegen, recovered, mu, logvar,output = model(val_fea, val_adj)
+    recovered, mu, logvar,output = model(val_fea, val_adj)
     loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
     acc_val = accuracy(output[idx_val], labels[idx_val]).item()
     early_stopping(acc_val, model)
@@ -226,7 +225,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
 
 def test(test_adj, test_fea):
     model.eval()
-    nodegen, recovered, mu, logvar,output = model(test_fea, test_adj)
+    recovered, mu, logvar,output = model(test_fea, test_adj)
     loss_test = F.nll_loss(output[idx_test], labels[idx_test])
     acc_test = accuracy(output[idx_test], labels[idx_test])
     auc_test = roc_auc_compute_fn(output[idx_test], labels[idx_test])
