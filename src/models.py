@@ -245,8 +245,8 @@ class GCNModel(nn.Module):
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
-            mu = self.mu(x, adj)
-            logvar = self.logvar(x, adj)
+            mu = self.mu(x, adj+ adj_con)
+            logvar = self.logvar(x, adj+ adj_con)
             z = self.reparameterize(mu, logvar)
             adj1 = self.dc(z)
 
@@ -257,8 +257,8 @@ class GCNModel(nn.Module):
             adj_con = adj_con +  F.softmax(masked_adj, dim=1)
             #adj = adj + adj_con
 
-            mu_n = self.mu_n(x, adj)
-            logvar_n = self.logvar_n(x, adj)
+            mu_n = self.mu_n(x, adj+ adj_con)
+            logvar_n = self.logvar_n(x, adj+ adj_con)
             z_n = self.reparameterize(mu_n, logvar_n)
             a1 = self.node_regen(z_n, adj1.t())
             zero_vec = -9e15*torch.ones_like(a1)
