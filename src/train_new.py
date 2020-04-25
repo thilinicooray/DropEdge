@@ -180,8 +180,8 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         acc_train = accuracy(output, labels[idx_train])
     else:
         loss_nc = F.nll_loss(output[idx_train], labels[idx_train])
-        ae_loss = loss_function(preds=recovered[idx_train], labels=train_adj[idx_train],
-                                mu=mu[idx_train], logvar=logvar[idx_train], n_nodes=train_adj.size(0))
+        ae_loss = loss_function(preds=recovered, labels=train_adj,
+                                mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
         loss_train = loss_nc + 0.1*ae_loss
         acc_train = accuracy(output[idx_train], labels[idx_train])
 
@@ -192,9 +192,9 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
     # We can not apply the fastmode for the reddit dataset.
     # if sampler.learning_type == "inductive" or not args.fastmode:
 
-    if args.early_stopping > 0 and sampler.dataset != "reddit":
+    '''if args.early_stopping > 0 and sampler.dataset != "reddit":
         loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
-        early_stopping(loss_val, model)
+        early_stopping(loss_val, model)'''
 
     if not args.fastmode:
         #    # Evaluate validation set performance separately,
@@ -204,10 +204,14 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
         acc_val = accuracy(output[idx_val], labels[idx_val]).item()
         if sampler.dataset == "reddit":
-            early_stopping(loss_val, model)
+            early_stopping(acc_val, model)
     else:
         loss_val = 0
         acc_val = 0
+
+    if args.early_stopping > 0 and sampler.dataset != "reddit":
+        #loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
+        early_stopping(acc_val, model)
 
     if args.lradjust:
         scheduler.step()
