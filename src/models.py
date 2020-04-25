@@ -249,12 +249,15 @@ class GCNModel(nn.Module):
             #get masked new adj
             zero_vec = -9e15*torch.ones_like(adj1)
             masked_adj = torch.where(adj > 0, adj1, zero_vec)
-            adj_con =   F.softmax(adj_con +masked_adj, dim=1)
+            adj1 =   F.softmax(masked_adj, dim=1)
 
-            a1 = self.node_regen(z, adj_con.t())
+
+            a1 = self.node_regen(z, adj1.t())
             zero_vec = -9e15*torch.ones_like(a1)
             masked_nodes = torch.where(fea > 0, a1, zero_vec)
             gen_node = F.softmax(gen_node +masked_nodes, dim=1)
+
+            adj_con = adj_con + adj1
 
 
         # output, no relu and dropput here.
