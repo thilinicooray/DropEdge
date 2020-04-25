@@ -192,7 +192,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
     # We can not apply the fastmode for the reddit dataset.
     # if sampler.learning_type == "inductive" or not args.fastmode:
 
-    '''if args.early_stopping > 0 and sampler.dataset != "reddit":
+    if args.early_stopping > 0 and sampler.dataset != "reddit":
         loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item() 
         early_stopping(loss_val, model)
 
@@ -207,17 +207,9 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
             early_stopping(loss_val, model)
     else:
         loss_val = 0
-        acc_val = 0'''
+        acc_val = 0
 
-    model.eval()
-    recovered, mu, logvar,output = model(val_fea, val_adj)
-    #loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
-    loss_nc = F.nll_loss(output[idx_val], labels[idx_val])
-    ae_loss = loss_function(preds=recovered, labels=val_adj,
-                            mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
-    loss_val = loss_nc + 0.1*ae_loss
-    acc_val = accuracy(output[idx_val], labels[idx_val]).item()
-    early_stopping(loss_val, model)
+
 
     if args.lradjust:
         scheduler.step()
