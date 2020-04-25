@@ -200,7 +200,7 @@ class GCNModel(nn.Module):
 
     def forward(self, fea, adj):
         x = self.ingc(fea, adj)
-
+        x = self.norm(x)
         x = F.dropout(x, self.dropout, training=self.training)
 
         # mid block connections
