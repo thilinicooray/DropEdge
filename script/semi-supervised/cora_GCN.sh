@@ -9,7 +9,7 @@ python ./src/train_new.py \
     --nhiddenlayer 4 \
     --nbaseblocklayer 0 \
     --hidden 128 \
-    --epoch 1400 \
+    --epoch 400 \
     --lr 0.007 \
     --weight_decay 1e-05 \
     --early_stopping 400 \
