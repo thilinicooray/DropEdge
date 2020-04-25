@@ -231,15 +231,15 @@ class GCNModel(nn.Module):
             #get masked new adj
             zero_vec = -9e15*torch.ones_like(adj1)
             masked_adj = torch.where(adj > 0, adj1, zero_vec)
-            adj1 += F.softmax(masked_adj, dim=1)
-            adj = adj + adj1
+            adj_con += F.softmax(masked_adj, dim=1)
+            adj = adj + adj_con
 
 
 
         # output, no relu and dropput here.
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        return adj1, mu, logvar, x
+        return adj_con, mu, logvar, x
 
 # Modified GCN
 class GCNFlatRes(nn.Module):
