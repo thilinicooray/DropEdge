@@ -246,7 +246,7 @@ class GCNModel(nn.Module):
 
 
         # output, no relu and dropput here.
-        x = self.outgc(x, adj)
+        x = self.outgc(x, adj+adj_con)
         x = F.log_softmax(x, dim=1)
         return adj_con, mu, logvar, x
 
