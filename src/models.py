@@ -232,8 +232,8 @@ class GCNModel(nn.Module):
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
-            mu = F.dropout(self.mu(x, adj), self.dropout, training=self.training)
-            logvar = F.dropout(self.logvar(x, adj), self.dropout, training=self.training)
+            mu = F.dropout(self.mu(x, adj+ adj_con), self.dropout, training=self.training)
+            logvar = F.dropout(self.logvar(x, adj+ adj_con), self.dropout, training=self.training)
             z = self.reparameterize(mu, logvar)
             adj1 = self.dc(z)
 
