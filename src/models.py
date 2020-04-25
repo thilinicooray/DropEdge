@@ -208,7 +208,7 @@ class GCNModel(nn.Module):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
             x = midgc(x, adj)
-            x = self.norm(x)
+            #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
         # output, no relu and dropput here.
         x = self.outgc(x, adj)
