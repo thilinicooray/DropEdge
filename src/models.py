@@ -243,7 +243,7 @@ class GCNModel(nn.Module):
             zero_vec = -9e15*torch.ones_like(adj1)
             masked_adj = torch.where(adj > 0, adj1, zero_vec)
             adj_con = adj_con + F.softmax(masked_adj, dim=1)
-            adj = adj + adj_con
+            adj = adj + adj_con #nan error
 
 
         # output, no relu and dropput here.
