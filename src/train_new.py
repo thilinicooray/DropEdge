@@ -217,8 +217,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
                             mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
     loss_val = loss_nc + 0.1*ae_loss
     acc_val = accuracy(output[idx_val], labels[idx_val]).item()
-    if sampler.dataset == "reddit":
-        early_stopping(loss_val, model)
+    early_stopping(loss_val, model)
 
     if args.lradjust:
         scheduler.step()
