@@ -182,7 +182,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         loss_nc = F.nll_loss(output[idx_train], labels[idx_train])
         ae_loss = loss_function(preds=recovered, labels=train_adj,
                                 mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
-        loss_train = loss_nc + 0.1*ae_loss
+        loss_train = loss_nc + 0.5*ae_loss
         acc_train = accuracy(output[idx_train], labels[idx_train])
 
     loss_train.backward()
