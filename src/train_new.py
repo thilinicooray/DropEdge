@@ -173,7 +173,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
     t = time.time()
     model.train()
     optimizer.zero_grad()
-    renode, recovered, mu, logvar, mu_n, logvar_n, output = model(train_fea, train_adj)
+    recovered, mu, logvar,output = model(train_fea, train_adj)
     # special for reddit
     if sampler.learning_type == "inductive":
         #loss_train = F.nll_loss(output, labels[idx_train])
@@ -182,9 +182,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         loss_nc = F.nll_loss(output[idx_train], labels[idx_train])
         ae_loss = loss_function(preds=recovered, labels=train_adj,
                                 mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
-        nae_loss = loss_function(preds=renode, labels=train_fea,
-                                mu=mu_n, logvar=logvar_n, n_nodes=train_adj.size(0))
-        loss_train = loss_nc + 0.1*ae_loss + 0.1*nae_loss
+        loss_train = loss_nc + 0.1*ae_loss
         acc_train = accuracy(output[idx_train], labels[idx_train])
 
     loss_train.backward()
@@ -202,7 +200,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         #    # Evaluate validation set performance separately,
         #    # deactivates dropout during validation run.
         model.eval()
-        renode, recovered, mu, logvar,mu_n, logvar_n,output = model(val_fea, val_adj)
+        recovered, mu, logvar,output = model(val_fea, val_adj)
         loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
         acc_val = accuracy(output[idx_val], labels[idx_val]).item()
         if sampler.dataset == "reddit":
@@ -220,7 +218,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
 
 def test(test_adj, test_fea):
     model.eval()
-    renode, recovered, mu, logvar,mu_n, logvar_n,output = model(test_fea, test_adj)
+    recovered, mu, logvar,output = model(test_fea, test_adj)
     loss_test = F.nll_loss(output[idx_test], labels[idx_test])
     acc_test = accuracy(output[idx_test], labels[idx_test])
     auc_test = roc_auc_compute_fn(output[idx_test], labels[idx_test])
@@ -277,7 +275,7 @@ for epoch in range(args.epochs):
         outputs = train(epoch, train_adj, train_fea, input_idx_train, val_adj, val_fea)
 
     if args.debug and epoch % 1 == 0:
-        '''print('Epoch: {:04d}'.format(epoch + 1),
+        print('Epoch: {:04d}'.format(epoch + 1),
               'loss_train: {:.4f}'.format(outputs[0]),
               'acc_train: {:.4f}'.format(outputs[1]),
               'loss_val: {:.4f}'.format(outputs[2]),
@@ -285,7 +283,7 @@ for epoch in range(args.epochs):
               'cur_lr: {:.5f}'.format(outputs[4]),
               's_time: {:.4f}s'.format(sampling_t),
               't_time: {:.4f}s'.format(outputs[5]),
-              'v_time: {:.4f}s'.format(outputs[6]))'''
+              'v_time: {:.4f}s'.format(outputs[6]))
     
     if args.no_tensorboard is False:
         tb_writer.add_scalars('Loss', {'train': outputs[0], 'val': outputs[2]}, epoch)
