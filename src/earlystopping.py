@@ -36,7 +36,7 @@ class EarlyStopping:
         self.clean = clean
     def __call__(self, val_loss, model):
 
-        score = -val_loss
+        score = val_loss
 
         if self.best_score is None:
             self.best_score = score
@@ -48,6 +48,7 @@ class EarlyStopping:
             if self.counter >= self.patience:
                 self.early_stop = True
         else:
+            print('new ', self.best_score, score)
             self.best_score = score
             self.save_checkpoint(val_loss, model)
             self.counter = 0

@@ -205,7 +205,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
         acc_val = accuracy(output[idx_val], labels[idx_val]).item()
         if sampler.dataset == "reddit":
-            early_stopping(loss_val, model)
+            early_stopping(acc_val, model)
     else:
         loss_val = 0
         acc_val = 0
