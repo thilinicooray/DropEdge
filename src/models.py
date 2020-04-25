@@ -229,7 +229,7 @@ class GCNModel(nn.Module):
         zero_vec = -9e15*torch.ones_like(a1)
         masked_nodes = torch.where(fea > 0, a1, zero_vec)
         node_con = F.softmax(masked_nodes, dim=1)
-
+        node_tot = node_con
 
 
         # mid block connections
@@ -256,7 +256,8 @@ class GCNModel(nn.Module):
             a1 = self.node_regen(z, adj1.t())
             zero_vec = -9e15*torch.ones_like(a1)
             masked_nodes = torch.where(fea > 0, a1, zero_vec)
-            node_con = node_con + F.softmax(masked_nodes, dim=1)
+            node_con = F.softmax(masked_nodes, dim=1)
+            node_tot = node_tot + node_con
 
 
         # output, no relu and dropput here.
