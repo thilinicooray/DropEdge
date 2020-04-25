@@ -6,7 +6,7 @@ python ./src/train_new.py \
     --seed 42 \
     --dataset cora \
     --type densegcn \
-    --nhiddenlayer 1 \
+    --nhiddenlayer 7 \
     --nbaseblocklayer 0 \
     --hidden 128 \
     --epoch 400 \
