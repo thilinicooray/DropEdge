@@ -6,7 +6,7 @@ python ./src/train_new.py \
     --seed 42 \
     --dataset cora \
     --type inceptiongcn \
-    --nhiddenlayer 3 \
+    --nhiddenlayer 15 \
     --nbaseblocklayer 0 \
     --hidden 128 \
     --epoch 400 \
