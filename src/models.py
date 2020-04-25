@@ -195,6 +195,8 @@ class GCNModel(nn.Module):
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+        self.mu_n = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+        self.logvar_n = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.node_regen = GraphConvolutionBS(nhid, nfeat, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
@@ -218,6 +220,9 @@ class GCNModel(nn.Module):
         logvar = self.logvar(x, adj)
         z = self.reparameterize(mu, logvar)
         adj1 = self.dc(z)
+        mu_n = self.mu_n(x, adj)
+        logvar_n = self.logvar_n(x, adj)
+        z_n = self.reparameterize(mu_n, logvar_n)
 
 
         #get masked new adj
@@ -225,7 +230,7 @@ class GCNModel(nn.Module):
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
         adj_con = F.softmax(masked_adj, dim=1)
 
-        a1 = self.node_regen(z, adj1.t())
+        a1 = self.node_regen(z_n, adj1.t())
         zero_vec = -9e15*torch.ones_like(a1)
         masked_nodes = torch.where(fea > 0, a1, zero_vec)
         node_con = F.softmax(masked_nodes, dim=1)
@@ -252,8 +257,10 @@ class GCNModel(nn.Module):
             adj_con = adj_con +  F.softmax(masked_adj, dim=1)
             #adj = adj + adj_con
 
-
-            a1 = self.node_regen(z, adj1.t())
+            mu_n = self.mu_n(x, adj)
+            logvar_n = self.logvar_n(x, adj)
+            z_n = self.reparameterize(mu_n, logvar_n)
+            a1 = self.node_regen(z_n, adj1.t())
             zero_vec = -9e15*torch.ones_like(a1)
             masked_nodes = torch.where(fea > 0, a1, zero_vec)
             node_con = F.softmax(masked_nodes, dim=1)
@@ -263,7 +270,7 @@ class GCNModel(nn.Module):
         # output, no relu and dropput here.
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        return node_con, adj_con, mu, logvar, x
+        return node_con, adj_con, mu, logvar, mu_n, logvar_n, x
 
 # Modified GCN
 class GCNFlatRes(nn.Module):

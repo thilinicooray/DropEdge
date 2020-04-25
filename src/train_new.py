@@ -173,7 +173,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
     t = time.time()
     model.train()
     optimizer.zero_grad()
-    renode, recovered, mu, logvar,output = model(train_fea, train_adj)
+    renode, recovered, mu, logvar, mu_n, logvar_n, output = model(train_fea, train_adj)
     # special for reddit
     if sampler.learning_type == "inductive":
         #loss_train = F.nll_loss(output, labels[idx_train])
@@ -183,7 +183,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         ae_loss = loss_function(preds=recovered, labels=train_adj,
                                 mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
         nae_loss = loss_function(preds=renode, labels=train_fea,
-                                mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
+                                mu=mu_n, logvar=logvar_n, n_nodes=train_adj.size(0))
         loss_train = loss_nc + 0.1*ae_loss + 0.1*nae_loss
         acc_train = accuracy(output[idx_train], labels[idx_train])
 
@@ -202,7 +202,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         #    # Evaluate validation set performance separately,
         #    # deactivates dropout during validation run.
         model.eval()
-        renode, recovered, mu, logvar,output = model(val_fea, val_adj)
+        renode, recovered, mu, logvar,mu_n, logvar_n,output = model(val_fea, val_adj)
         loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
         acc_val = accuracy(output[idx_val], labels[idx_val]).item()
         if sampler.dataset == "reddit":
@@ -220,7 +220,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
 
 def test(test_adj, test_fea):
     model.eval()
-    renode, recovered, mu, logvar,output = model(test_fea, test_adj)
+    renode, recovered, mu, logvar,mu_n, logvar_n,output = model(test_fea, test_adj)
     loss_test = F.nll_loss(output[idx_test], labels[idx_test])
     acc_test = accuracy(output[idx_test], labels[idx_test])
     auc_test = roc_auc_compute_fn(output[idx_test], labels[idx_test])
