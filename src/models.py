@@ -184,7 +184,7 @@ class GCNModel(nn.Module):
 
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
-
+        self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
             gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
