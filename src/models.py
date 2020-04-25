@@ -186,7 +186,7 @@ class GCNModel(nn.Module):
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid+nfeat, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
@@ -195,6 +195,7 @@ class GCNModel(nn.Module):
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+        self.nodegen = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
     def reset_parameters(self):
@@ -224,11 +225,18 @@ class GCNModel(nn.Module):
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
         adj_con = F.softmax(masked_adj, dim=1)
 
+        a1 = self.node_regen(z, adj1.t())
+        zero_vec = -9e15*torch.ones_like(a1)
+        masked_nodes = torch.where(fea > 0, a1, zero_vec)
+        node_con = F.softmax(masked_nodes, dim=1)
+
+
+
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
-            x = midgc(x, adj+ adj_con)
+            x = midgc(torch.cat([x, node_con], -1), adj+ adj_con)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
@@ -245,11 +253,16 @@ class GCNModel(nn.Module):
             #adj = adj + adj_con
 
 
+            a1 = self.node_regen(z, adj1.t())
+            zero_vec = -9e15*torch.ones_like(a1)
+            masked_nodes = torch.where(fea > 0, a1, zero_vec)
+            node_con = node_con + F.softmax(masked_nodes, dim=1)
+
 
         # output, no relu and dropput here.
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        return adj_con, mu, logvar, x
+        return node_con, adj_con, mu, logvar, x
 
 # Modified GCN
 class GCNFlatRes(nn.Module):
