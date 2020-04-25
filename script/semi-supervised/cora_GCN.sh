@@ -6,7 +6,7 @@ python ./src/train_new.py \
     --seed 42 \
     --dataset cora \
     --type resgcn \
-    --nhiddenlayer 2 \
+    --nhiddenlayer 4 \
     --nbaseblocklayer 0 \
     --hidden 128 \
     --epoch 400 \
