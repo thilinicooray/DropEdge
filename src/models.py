@@ -228,7 +228,7 @@ class GCNModel(nn.Module):
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
-            x = midgc(x, adj + adj_con)
+            x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
@@ -245,7 +245,7 @@ class GCNModel(nn.Module):
 
 
         # output, no relu and dropput here.
-        x = self.outgc(x, adj+ adj_con)
+        x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
         return adj_con, mu, logvar, x
 
