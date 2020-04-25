@@ -188,10 +188,9 @@ class GCNModel(nn.Module):
         for i in range(nhidlayer):
             gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
-            baseblockinput = gcb.get_outdim()
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(baseblockinput, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
 
 
 
