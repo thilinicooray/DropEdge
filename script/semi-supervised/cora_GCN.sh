@@ -6,9 +6,9 @@ python ./src/train_new.py \
     --seed 42 \
     --dataset cora \
     --type resgcn \
-    --nhiddenlayer 2 \
+    --nhiddenlayer 4 \
     --nbaseblocklayer 0 \
-    --hidden 32 \
+    --hidden 128 \
     --epoch 400 \
     --lr 0.007 \
     --weight_decay 1e-05 \
