@@ -198,7 +198,6 @@ class GCNModel(nn.Module):
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
         self.node_regen = GraphConvolutionBS(nhid, nfeat, activation, withbn, withloop)
-        self.join = nn.Linear(2,1)
 
     def reset_parameters(self):
         pass
@@ -216,7 +215,7 @@ class GCNModel(nn.Module):
 
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
-        '''mu = self.mu(x, adj)
+        mu = self.mu(x, adj)
         logvar = self.logvar(x, adj)
         z = self.reparameterize(mu, logvar)
         adj1 = self.dc(z)
@@ -225,43 +224,23 @@ class GCNModel(nn.Module):
         #get masked new adj
         zero_vec = -9e15*torch.ones_like(adj1)
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
-        adj_con = F.softmax(masked_adj, dim=1)'''
+        adj_con = F.softmax(masked_adj, dim=1)
 
-        adj1 = self.dc(x)
-
-
-        #get masked new adj
-        zero_vec = -9e15*torch.ones_like(adj1)
-        masked_adj = torch.where(adj > 0, adj1, zero_vec)
-        adj1 = F.softmax(masked_adj, dim=1)
-
-        new_a = self.join(torch.cat([adj.unsqueeze(-1),adj1.unsqueeze(-1)],-1)).squeeze()
-        new_a =  F.softmax(new_a, dim=1)
-        adj_con = new_a
+        a1 = self.node_regen(z, adj_con.t())
+        zero_vec = -9e15*torch.ones_like(a1)
+        masked_nodes = torch.where(fea > 0, a1, zero_vec)
+        gen_node = F.softmax(masked_nodes, dim=1)
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
 
-            x = midgc(torch.cat([x, fea],-1), new_a)
+            x = midgc(torch.cat([x, fea],-1), adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-
-            adj1 = self.dc(x)
-
-
-            #get masked new adj
-            masked_adj = torch.where(adj > 0, adj1, zero_vec)
-            adj1 = F.softmax(masked_adj, dim=1)
-
-            new_a = self.join(torch.cat([adj.unsqueeze(-1),adj1.unsqueeze(-1)],-1)).squeeze()
-            new_a =  F.softmax(new_a, dim=1)
-            adj_con = adj1
-
-
             #vae
-            '''mu = self.mu(x, adj)
+            mu = self.mu(x, adj)
             logvar = self.logvar(x, adj)
             z = self.reparameterize(mu, logvar)
             adj1 = self.dc(z)
@@ -270,17 +249,12 @@ class GCNModel(nn.Module):
             #get masked new adj
             zero_vec = -9e15*torch.ones_like(adj1)
             masked_adj = torch.where(adj > 0, adj1, zero_vec)
-            adj_con = F.softmax(adj_con +masked_adj, dim=1)'''
-
-        '''mu = self.mu(x, adj)
-        logvar = self.logvar(x, adj)
-        z = self.reparameterize(mu, logvar)'''
-
+            adj_con = F.softmax(adj_con +masked_adj, dim=1)
 
         # output, no relu and dropput here.
-        x = self.outgc(torch.cat([x, fea],-1), new_a)
+        x = self.outgc(torch.cat([x, fea],-1), adj)
         x = F.log_softmax(x, dim=1)
-        return adj_con// (len(self.midlayer) + 1), x
+        return adj_con, mu, logvar, x
 
 class GCNModel_org(nn.Module):
     """
@@ -368,7 +342,7 @@ class GCNModel_org(nn.Module):
             midgc = self.midlayer[i]
 
             x = midgc(torch.cat([x, fea],-1), adj)
-            #x = self.norm(x)
+            x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
 
