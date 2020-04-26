@@ -227,16 +227,40 @@ class GCNModel(nn.Module):
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
         adj_con = F.softmax(masked_adj, dim=1)'''
 
+        adj1 = self.dc(x)
 
+
+        #get masked new adj
+        zero_vec = -9e15*torch.ones_like(adj1)
+        masked_adj = torch.where(adj > 0, adj1, zero_vec)
+        adj1 = F.softmax(masked_adj, dim=1)
+
+        new_a = torch.where(adj > 0,self.join(torch.cat([adj.unsqueeze(-1),adj1.unsqueeze(-1)],-1)).squeeze(),zero_vec)
+        new_a =  F.softmax(new_a, dim=1)
+        adj_con = new_a
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
 
-            x = midgc(torch.cat([x, fea],-1), adj)
+            x = midgc(torch.cat([x, fea],-1), new_a)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
+
+            adj1 = self.dc(x)
+
+
+            #get masked new adj
+            zero_vec = -9e15*torch.ones_like(adj1)
+            masked_adj = torch.where(adj > 0, adj1, zero_vec)
+            adj1 = F.softmax(masked_adj, dim=1)
+
+            new_a = torch.where(adj > 0,self.join(torch.cat([adj.unsqueeze(-1),adj1.unsqueeze(-1)],-1)).squeeze(),zero_vec)
+            new_a =  F.softmax(new_a, dim=1)
+            adj_con = adj_con + new_a
+
+
             #vae
             '''mu = self.mu(x, adj)
             logvar = self.logvar(x, adj)
@@ -252,21 +276,12 @@ class GCNModel(nn.Module):
         '''mu = self.mu(x, adj)
         logvar = self.logvar(x, adj)
         z = self.reparameterize(mu, logvar)'''
-        adj1 = self.dc(x)
 
-
-        #get masked new adj
-        zero_vec = -9e15*torch.ones_like(adj1)
-        masked_adj = torch.where(adj > 0, adj1, zero_vec)
-        adj_con = F.softmax(masked_adj, dim=1)
-
-        new_a = torch.where(adj > 0,self.join(torch.cat([adj.unsqueeze(-1),adj_con.unsqueeze(-1)],-1)).squeeze(),zero_vec)
-        new_a =  F.softmax(new_a, dim=1)
 
         # output, no relu and dropput here.
         x = self.outgc(torch.cat([x, fea],-1), new_a)
         x = F.log_softmax(x, dim=1)
-        return adj_con, x
+        return adj_con// (len(self.midlayer) + 1), x
 
 class GCNModel_org(nn.Module):
     """
