@@ -198,6 +198,7 @@ class GCNModel(nn.Module):
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
         self.node_regen = GraphConvolutionBS(nhid, nfeat, activation, withbn, withloop)
+        self.join = nn.Linear(2,1)
 
     def reset_parameters(self):
         pass
@@ -248,10 +249,10 @@ class GCNModel(nn.Module):
             masked_adj = torch.where(adj > 0, adj1, zero_vec)
             adj_con = F.softmax(adj_con +masked_adj, dim=1)'''
 
-        mu = self.mu(x, adj)
+        '''mu = self.mu(x, adj)
         logvar = self.logvar(x, adj)
-        z = self.reparameterize(mu, logvar)
-        adj1 = self.dc(z)
+        z = self.reparameterize(mu, logvar)'''
+        adj1 = self.dc(x)
 
 
         #get masked new adj
@@ -259,10 +260,13 @@ class GCNModel(nn.Module):
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
         adj_con = F.softmax(masked_adj, dim=1)
 
+        new_a = torch.where(adj > 0,self.join(torch.cat([adj,adj_con],-1)),zero_vec)
+        new_a =  F.softmax(new_a, dim=1)
+
         # output, no relu and dropput here.
-        x = self.outgc(torch.cat([x, fea],-1), adj+adj_con)
+        x = self.outgc(torch.cat([x, fea],-1), new_a)
         x = F.log_softmax(x, dim=1)
-        return adj_con, mu, logvar, x
+        return adj_con, x
 
 class GCNModel_org(nn.Module):
     """

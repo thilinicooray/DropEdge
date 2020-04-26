@@ -173,7 +173,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
     t = time.time()
     model.train()
     optimizer.zero_grad()
-    recovered, mu, logvar,output = model(train_fea, train_adj)
+    recovered, output = model(train_fea, train_adj)
     # special for reddit
     if sampler.learning_type == "inductive":
         #loss_train = F.nll_loss(output, labels[idx_train])
@@ -181,7 +181,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
     else:
         loss_nc = F.nll_loss(output[idx_train], labels[idx_train])
         ae_loss = loss_function(preds=recovered, labels=train_adj,
-                                mu=mu, logvar=logvar, n_nodes=train_adj.size(0))
+                                mu=None, logvar=None, n_nodes=train_adj.size(0))
 
         loss_train = loss_nc + 0.5*ae_loss
         acc_train = accuracy(output[idx_train], labels[idx_train])
@@ -211,7 +211,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         acc_val = 0'''
 
     model.eval()
-    recovered, mu, logvar,output = model(val_fea, val_adj)
+    recovered, output = model(val_fea, val_adj)
     loss_val = F.nll_loss(output[idx_val], labels[idx_val]).item()
     acc_val = accuracy(output[idx_val], labels[idx_val]).item()
     early_stopping(acc_val, model)
@@ -225,7 +225,7 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
 
 def test(test_adj, test_fea):
     model.eval()
-    recovered, mu, logvar,output = model(test_fea, test_adj)
+    recovered, output = model(test_fea, test_adj)
     loss_test = F.nll_loss(output[idx_test], labels[idx_test])
     acc_test = accuracy(output[idx_test], labels[idx_test])
     auc_test = roc_auc_compute_fn(output[idx_test], labels[idx_test])
@@ -244,9 +244,9 @@ def loss_function(preds, labels, mu, logvar, n_nodes):
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
     # https://arxiv.org/abs/1312.6114
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-    KLD = -0.5 / n_nodes * torch.mean(torch.sum(
-        1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2), 1))
-    return cost + KLD
+    '''KLD = -0.5 / n_nodes * torch.mean(torch.sum(
+        1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2), 1))'''
+    return cost
 
 
 
