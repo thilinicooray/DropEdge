@@ -257,7 +257,7 @@ class GCNModel(nn.Module):
 
             new_a = self.join(torch.cat([adj.unsqueeze(-1),adj1.unsqueeze(-1)],-1)).squeeze()
             new_a =  F.softmax(new_a, dim=1)
-            adj_con = adj_con + adj1
+            adj_con = adj1
 
 
             #vae
