@@ -13,7 +13,7 @@ python ./src/train_new_org.py \
     --lr 0.007 \
     --weight_decay 1e-05 \
     --early_stopping 400 \
-    --sampling_percent 1.0 \
+    --sampling_percent 0.8 \
     --dropout 0.8 \
     --normalization AugNormAdj --task_type semi \
      \
