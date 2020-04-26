@@ -260,7 +260,7 @@ class GCNModel(nn.Module):
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
         adj_con = F.softmax(masked_adj, dim=1)
 
-        new_a = torch.where(adj > 0,self.join(torch.cat([adj,adj_con],-1)),zero_vec)
+        new_a = torch.where(adj > 0,self.join(torch.cat([adj.unsqueeze(-1),adj_con.unsqueeze(-1)],-1)).squeeze(),zero_vec)
         new_a =  F.softmax(new_a, dim=1)
 
         # output, no relu and dropput here.
