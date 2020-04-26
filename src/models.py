@@ -252,13 +252,12 @@ class GCNModel(nn.Module):
 
 
             #get masked new adj
-            zero_vec = -9e15*torch.ones_like(adj1)
             masked_adj = torch.where(adj > 0, adj1, zero_vec)
             adj1 = F.softmax(masked_adj, dim=1)
 
             new_a = torch.where(adj > 0,self.join(torch.cat([adj.unsqueeze(-1),adj1.unsqueeze(-1)],-1)).squeeze(),zero_vec)
             new_a =  F.softmax(new_a, dim=1)
-            adj_con = adj_con + new_a
+            adj_con = adj_con + adj1
 
 
             #vae
