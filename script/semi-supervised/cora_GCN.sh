@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python ./src/train_new_org.py \
+python ./src/train_new.py \
     --debug \
     --datapath data// \
     --seed 42 \

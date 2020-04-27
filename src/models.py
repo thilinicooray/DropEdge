@@ -226,17 +226,15 @@ class GCNModel(nn.Module):
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
         adj_con = F.softmax(masked_adj, dim=1)
 
-        a1 = self.node_regen(z, adj_con.t())
-        zero_vec = -9e15*torch.ones_like(a1)
-        masked_nodes = torch.where(fea > 0, a1, zero_vec)
-        gen_node = F.softmax(masked_nodes, dim=1)
+
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
 
-            x = midgc(torch.cat([x, fea],-1), adj)
+            #x = midgc(torch.cat([x, fea],-1), adj)
+            x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
@@ -252,7 +250,7 @@ class GCNModel(nn.Module):
             adj_con =  F.softmax(adj_con +masked_adj, dim=1)
 
         # output, no relu and dropput here.
-        x = self.outgc(torch.cat([x, fea],-1), adj)
+        x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
         return adj_con//(len(self.midlayer) +  1) , mu, logvar, x
 
