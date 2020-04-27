@@ -343,7 +343,7 @@ class GCNModel_org(nn.Module):
 
             #x = midgc(torch.cat([x, fea],-1), adj)
             x = midgc(x, adj)
-            x = self.norm(x)
+            #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
 
