@@ -254,7 +254,7 @@ class GCNModel(nn.Module):
         x = F.log_softmax(x, dim=1)
         return adj_con//(len(self.midlayer) +  1) , mu, logvar, x
 
-def attention(query, key, value, mask=None, dropout=None):
+def attention(query, key, value, mask=None, dropout=0.2):
     "Compute 'Scaled Dot Product Attention'"
     d_k = query.size(-1)
     scores = torch.matmul(query, key.transpose(-2, -1)) \
