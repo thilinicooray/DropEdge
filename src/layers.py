@@ -67,7 +67,7 @@ class GraphConvolutionBS(Module):
     def forward(self, input, adj):
         support = torch.mm(input, self.weight)
 
-        output = torch.mm(adj, support)
+        output = torch.spmm(adj, support)
 
         # Self-loop
         if self.self_weight is not None:
