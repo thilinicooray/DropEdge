@@ -173,7 +173,6 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
     t = time.time()
     model.train()
     optimizer.zero_grad()
-    #pmodel = torch.nn.DataParallel(model, device_ids=[0,1])
     output = model(train_fea, train_adj)
     # special for reddit
     if sampler.learning_type == "inductive":

@@ -98,8 +98,8 @@ def load_citation(dataset_str="cora", normalization="AugNormAdj", porting_to_tor
         features = torch.FloatTensor(features).float()
         labels = torch.LongTensor(labels)
         # labels = torch.max(labels, dim=1)[1]
-        adj = sparse_mx_to_torch_sparse_tensor(adj).float()
-        #adj = torch.FloatTensor(np.array(adj.todense()))
+        #adj = sparse_mx_to_torch_sparse_tensor(adj).float()
+        adj = torch.FloatTensor(np.array(adj.todense()))
         idx_train = torch.LongTensor(idx_train)
         idx_val = torch.LongTensor(idx_val)
         idx_test = torch.LongTensor(idx_test)

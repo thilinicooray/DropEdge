@@ -32,9 +32,6 @@ class GraphConvolutionBS(Module):
         self.sigma = activation
         self.res = res
 
-        self.key_proj = nn.Linear(out_features, out_features)
-        self.query_proj = nn.Linear(out_features, out_features)
-
         # Parameter setting.
         self.weight = Parameter(torch.FloatTensor(in_features, out_features))
         # Is this the best practice or not?
@@ -66,7 +63,6 @@ class GraphConvolutionBS(Module):
 
     def forward(self, input, adj):
         support = torch.mm(input, self.weight)
-
         output = torch.spmm(adj, support)
 
         # Self-loop

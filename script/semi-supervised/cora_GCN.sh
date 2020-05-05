@@ -1,12 +1,12 @@
 #!/bin/bash
 
-python ./src/train_new_org.py \
+python ./src/train_new.py \
     --debug \
     --datapath data// \
     --seed 42 \
     --dataset cora \
     --type resgcn \
-    --nhiddenlayer 62 \
+    --nhiddenlayer 30 \
     --nbaseblocklayer 0 \
     --hidden 128 \
     --epoch 400 \
