@@ -20,9 +20,9 @@ class Attention(nn.Module):
         q: [batch, qdim]
         """
         logits = self.logits(v, q)
-        print('rep ', logits.size(), logits[:5, :10])
-        w = nn.functional.softmax(logits, 1)
 
+        w = nn.functional.softmax(logits, 1)
+        print('rep ', w[:5, :10])
         return w
 
     def logits(self, v, q):
@@ -100,7 +100,9 @@ class GraphConvolutionBS(Module):
 
         #trying new adj based on node similarity irrespective of original adj
         conv1 = support.unsqueeze(0).expand(input.size(0), input.size(0), support.size(-1))
-        att = self.attention(conv1, support)
+        p_att = torch.nn.DataParallel(self.attention, device_ids=[0,1])
+        att = p_att(conv1, support)
+        print('att ', att.size())
 
         output = torch.spmm(adj, support)
 
