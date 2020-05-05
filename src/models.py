@@ -311,11 +311,11 @@ class GCNModel_org(nn.Module):
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid+nfeat, nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid*2+nfeat, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid*2+nfeat, nclass, outactivation, withbn, withloop)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
@@ -360,7 +360,7 @@ class GCNModel_org(nn.Module):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
 
-            x = midgc(torch.cat([x+val, fea],-1), adj)
+            x = midgc(torch.cat([x, fea, val],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
@@ -369,7 +369,7 @@ class GCNModel_org(nn.Module):
 
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
-        x = self.outgc(torch.cat([x+val, fea],-1), adj)
+        x = self.outgc(torch.cat([x, fea, val],-1), adj)
         x = F.log_softmax(x, dim=1)
         return x
 
