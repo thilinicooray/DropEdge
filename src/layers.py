@@ -36,8 +36,8 @@ class Attention(nn.Module):
         joint_repr = torch.tanh(joint_repr)
 
         joint_repr = self.dropout(joint_repr)
-        logits = self.linear(joint_repr)
-        return logits
+        #logits = self.linear(joint_repr)
+        return joint_repr
 
 
 class GraphConvolutionBS(Module):
