@@ -7,6 +7,35 @@ from torch.nn.modules.module import Module
 from torch import nn
 import torch.nn.functional as F
 
+class Attention(nn.Module):
+    def __init__(self, v_dim, q_dim, num_hid, dropout=0.2):
+        super(Attention, self).__init__()
+        self.nonlinear = nn.Linear(v_dim + q_dim, num_hid)
+        self.dropout = nn.Dropout(dropout)
+        self.linear = nn.Linear(num_hid, 1)
+
+    def forward(self, v, q):
+        """
+        v: [batch, k, vdim]
+        q: [batch, qdim]
+        """
+        logits = self.logits(v, q)
+
+        w = nn.functional.softmax(logits, 1)
+        return w
+
+    def logits(self, v, q):
+        num_objs = v.size(1)
+        q = q.unsqueeze(1).repeat(1, num_objs, 1)
+        vq = torch.cat((v, q), 2)
+        joint_repr = self.nonlinear(vq)
+
+        print('rep ', joint_repr[:5, :10])
+
+        joint_repr = torch.tanh(joint_repr)
+        joint_repr = self.dropout(joint_repr)
+        logits = self.linear(joint_repr)
+        return logits
 
 
 class GraphConvolutionBS(Module):
@@ -31,6 +60,8 @@ class GraphConvolutionBS(Module):
         self.out_features = out_features
         self.sigma = activation
         self.res = res
+
+        self.attention = Attention(out_features, out_features, out_features)
 
         # Parameter setting.
         self.weight = Parameter(torch.FloatTensor(in_features, out_features))
@@ -65,10 +96,7 @@ class GraphConvolutionBS(Module):
         support = torch.mm(input, self.weight)
 
         #trying new adj based on node similarity irrespective of original adj
-        d_k = support.size(-1)
-        scores = torch.matmul(support, support.transpose(-2, -1)) \
-             / math.sqrt(d_k)
-        print('scores ', scores[:5, :10])
+        att = self.attention(support, support)
 
         output = torch.spmm(adj, support)
 
