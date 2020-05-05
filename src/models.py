@@ -322,7 +322,7 @@ class GCNModel_org(nn.Module):
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
-    def attention(self, query, key, value, mask=None, dropout=None):
+    def attention(self, query, key, value, mask=None, dropout=0.5):
         "Compute 'Scaled Dot Product Attention'"
         d_k = query.size(-1)
         scores = torch.matmul(query, key.transpose(-2, -1)) \
