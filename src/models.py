@@ -254,7 +254,7 @@ class GCNModel(nn.Module):
         x = F.log_softmax(x, dim=1)
         return adj_con//(len(self.midlayer) +  1) , mu, logvar, x
 
-def attention(query, key, value, mask=None, dropout=0.2):
+def attention(query, key, value, mask=None, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
     d_k = query.size(-1)
     scores = torch.matmul(query, key.transpose(-2, -1)) \
@@ -352,7 +352,7 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
 
-        val = attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj)
+        val = attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj, self.dropout)
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
@@ -363,7 +363,7 @@ class GCNModel_org(nn.Module):
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj)
+            val = attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj, self.dropout)
 
 
         # output, no relu and dropput here.
