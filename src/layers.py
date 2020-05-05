@@ -22,6 +22,7 @@ class Attention(nn.Module):
         logits = self.logits(v, q)
 
         w = nn.functional.softmax(logits, 1)
+        print('rep ', w[:5, :10])
         return w
 
     def logits(self, v, q):
@@ -33,7 +34,7 @@ class Attention(nn.Module):
 
 
         joint_repr = torch.tanh(joint_repr)
-        print('rep ', joint_repr[:5, :10])
+
         joint_repr = self.dropout(joint_repr)
         logits = self.linear(joint_repr)
         return logits
