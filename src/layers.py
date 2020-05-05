@@ -71,7 +71,7 @@ class GraphConvolutionBS(Module):
         d_k = support.size(-1)
         scores = torch.matmul(self.key_proj(support), self.query_proj(support).transpose(-2, -1)) \
              / math.sqrt(d_k)
-        scores = F.softmax(scores, dim = -1)
+        scores = F.relu(scores)
         print('scores ', scores[:5, :10])
 
         output = torch.spmm(adj, support)
