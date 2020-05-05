@@ -27,7 +27,8 @@ class Attention(nn.Module):
     def logits(self, v, q):
         num_objs = v.size(1)
         q = q.unsqueeze(1).repeat(1, num_objs, 1)
-        vq = torch.cat((v, q), 2)
+        vq = torch.cat((v, q), -1)
+        print('vq ', vq.size())
         joint_repr = self.nonlinear(vq)
 
         print('rep ', joint_repr[:5, :10])
