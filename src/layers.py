@@ -15,7 +15,7 @@ class GraphConvolutionBS(Module):
     """
 
     def __init__(self, in_features, out_features, activation=lambda x: x, withbn=True, withloop=True, bias=True,
-                 res=False):
+                 res=True):
         """
         Initial function.
         :param in_features: the input feature dimension.

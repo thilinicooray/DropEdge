@@ -303,14 +303,14 @@ class GCNModel_org(nn.Module):
         self.dropout = dropout
 
 
-        self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
+        self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop, res=False)
         self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
             gcb = GraphConvolutionBS(nhid+nfeat, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop, res=False)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
