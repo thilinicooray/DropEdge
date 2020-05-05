@@ -27,8 +27,7 @@ class Attention(nn.Module):
     def logits(self, v, q):
         num_objs = v.size(1)
         q = q.unsqueeze(1).repeat(1, num_objs, 1)
-        vq = torch.cat((v, q), -1)
-        print('vq ', vq.size())
+        vq = torch.cat((v, q), 2)
         joint_repr = self.nonlinear(vq)
 
         print('rep ', joint_repr[:5, :10])
@@ -97,6 +96,8 @@ class GraphConvolutionBS(Module):
         support = torch.mm(input, self.weight)
 
         #trying new adj based on node similarity irrespective of original adj
+        conv1 = support.unsqueeze(1).expand(input.size(0), input.size(0), support.size(-1))
+        print('conv1', conv1[:3, :5])
         att = self.attention(support, support)
 
         output = torch.spmm(adj, support)
