@@ -7,37 +7,6 @@ from torch.nn.modules.module import Module
 from torch import nn
 import torch.nn.functional as F
 
-class Attention(nn.Module):
-    def __init__(self, v_dim, q_dim, num_hid, dropout=0.2):
-        super(Attention, self).__init__()
-        self.nonlinear = nn.Linear(v_dim + q_dim, num_hid)
-        self.dropout = nn.Dropout(dropout)
-        self.linear = nn.Linear(num_hid, 1)
-
-    def forward(self, v, q):
-        """
-        v: [batch, k, vdim]
-        q: [batch, qdim]
-        """
-        logits = self.logits(v, q)
-
-        w = nn.functional.softmax(logits, 1)
-        print('rep ', w[:5, :10])
-        return w
-
-    def logits(self, v, q):
-        num_objs = v.size(1)
-        q = q.unsqueeze(1).repeat(1, num_objs, 1)
-        vq = torch.cat((v, q), 2)
-        joint_repr = self.nonlinear(vq)
-
-
-
-        joint_repr = torch.tanh(joint_repr)
-
-        joint_repr = self.dropout(joint_repr)
-        #logits = self.linear(joint_repr)
-        return joint_repr
 
 
 class GraphConvolutionBS(Module):
@@ -63,7 +32,8 @@ class GraphConvolutionBS(Module):
         self.sigma = activation
         self.res = res
 
-        self.attention = Attention(out_features, out_features, out_features)
+        self.key_proj = nn.Linear(out_features, out_features)
+        self.query_proj = nn.Linear(out_features, out_features)
 
         # Parameter setting.
         self.weight = Parameter(torch.FloatTensor(in_features, out_features))
@@ -95,14 +65,13 @@ class GraphConvolutionBS(Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, adj):
-        print('input ', input.size(), adj.size())
         support = torch.mm(input, self.weight)
 
         #trying new adj based on node similarity irrespective of original adj
-        conv1 = support.unsqueeze(0).expand(input.size(0), input.size(0), support.size(-1))
-        p_att = torch.nn.DataParallel(self.attention, device_ids=[0,1])
-        att = p_att(conv1, support)
-        print('att ', att.size())
+        d_k = support.size(-1)
+        scores = torch.matmul(self.key_proj(support), self.query_proj(support).transpose(-2, -1)) \
+             / math.sqrt(d_k)
+        print('scores ', scores[:5, :10])
 
         output = torch.spmm(adj, support)
 
