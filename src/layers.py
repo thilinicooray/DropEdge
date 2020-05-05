@@ -20,9 +20,9 @@ class Attention(nn.Module):
         q: [batch, qdim]
         """
         logits = self.logits(v, q)
-
+        print('rep ', logits.size(), logits[:5, :10])
         w = nn.functional.softmax(logits, 1)
-        print('rep ', w[:5, :10])
+
         return w
 
     def logits(self, v, q):
