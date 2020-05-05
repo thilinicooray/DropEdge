@@ -74,7 +74,7 @@ class GraphConvolutionBS(Module):
         scores = F.relu(scores_prev)
         print('scores ', scores[:5, :30], scores_prev[:5, :30])
 
-        output = torch.spmm(scores, support)
+        output = torch.spmm(scores+ adj, support)
 
         # Self-loop
         if self.self_weight is not None:
