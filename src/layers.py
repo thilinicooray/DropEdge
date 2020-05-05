@@ -97,8 +97,7 @@ class GraphConvolutionBS(Module):
 
         #trying new adj based on node similarity irrespective of original adj
         conv1 = support.unsqueeze(0).expand(input.size(0), input.size(0), support.size(-1))
-        print('conv1', conv1[:3, :5])
-        att = self.attention(support, support)
+        att = self.attention(conv1, support)
 
         output = torch.spmm(adj, support)
 
