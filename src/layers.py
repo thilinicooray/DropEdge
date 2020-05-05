@@ -95,6 +95,7 @@ class GraphConvolutionBS(Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, adj):
+        print('input ', input.size(), adj.size())
         support = torch.mm(input, self.weight)
 
         #trying new adj based on node similarity irrespective of original adj
