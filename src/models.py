@@ -254,6 +254,20 @@ class GCNModel(nn.Module):
         x = F.log_softmax(x, dim=1)
         return adj_con//(len(self.midlayer) +  1) , mu, logvar, x
 
+def attention(query, key, value, mask=None, dropout=None):
+    "Compute 'Scaled Dot Product Attention'"
+    d_k = query.size(-1)
+    scores = torch.matmul(query, key.transpose(-2, -1)) \
+             / math.sqrt(d_k)
+
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, -1e9)
+    p_attn = F.softmax(scores, dim = -1)
+    if dropout is not None:
+        p_attn = dropout(p_attn)
+
+    return torch.matmul(p_attn, value)
+
 class GCNModel_org(nn.Module):
     """
        The model for the single kind of deepgcn blocks.
@@ -302,15 +316,19 @@ class GCNModel_org(nn.Module):
 
         self.dropout = dropout
 
+        self.key_proj = nn.Linear(nhid,nhid)
+        self.query_proj = nn.Linear(nhid,nhid)
+        self.value_proj = nn.Linear(nhid,nhid)
+
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid+nfeat, nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid*2+nfeat, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid*2+nfeat, nclass, outactivation, withbn, withloop)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
@@ -334,20 +352,23 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
 
+        val = attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj)
+
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
 
-            x = midgc(torch.cat([x, fea],-1), adj)
+            x = midgc(torch.cat([x, fea, val],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            #vae
+            val = attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj)
 
 
         # output, no relu and dropput here.
-        x = self.outgc(torch.cat([x, fea],-1), adj)
+        print('x', x[:5, :5])
+        x = self.outgc(torch.cat([x, fea, val],-1), adj)
         x = F.log_softmax(x, dim=1)
         return x
 
