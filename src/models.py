@@ -359,7 +359,7 @@ class GCNModel_org(nn.Module):
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
-
+            print('val, feat ', x[:5,:5], val[:5,:5])
             x = midgc(torch.cat([x, fea, val],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
