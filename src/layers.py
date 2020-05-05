@@ -67,14 +67,7 @@ class GraphConvolutionBS(Module):
     def forward(self, input, adj):
         support = torch.mm(input, self.weight)
 
-        #trying new adj based on node similarity irrespective of original adj
-        d_k = support.size(-1)
-        scores_prev = torch.matmul(self.key_proj(support), self.query_proj(support).transpose(-2, -1)) \
-             / math.sqrt(d_k)
-        scores = F.relu(scores_prev)
-        print('scores ', scores[:5, :30], scores_prev[:5, :30])
-
-        output = torch.mm(scores+ adj, support)
+        output = torch.mm(adj, support)
 
         # Self-loop
         if self.self_weight is not None:
