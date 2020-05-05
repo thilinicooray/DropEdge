@@ -30,9 +30,10 @@ class Attention(nn.Module):
         vq = torch.cat((v, q), 2)
         joint_repr = self.nonlinear(vq)
 
-        print('rep ', joint_repr[:5, :10])
+
 
         joint_repr = torch.tanh(joint_repr)
+        print('rep ', joint_repr[:5, :10])
         joint_repr = self.dropout(joint_repr)
         logits = self.linear(joint_repr)
         return logits
