@@ -382,7 +382,7 @@ class GCNModel_org(nn.Module):
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             val = val * self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask)
-            print('val',i, val [:5,:10], x[:5,:10])
+            print('val',i, torch.tanh(val) [:5,:10], x[:5,:10])
             val_in = val + x
 
         # output, no relu and dropput here.
