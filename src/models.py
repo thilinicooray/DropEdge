@@ -355,20 +355,21 @@ class GCNModel_org(nn.Module):
 
         val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
 
-        mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
-        val = F.normalize(mfb_sign_sqrt)
-        #val = val + x
+        '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
+        val = F.normalize(mfb_sign_sqrt)'''
+        val = val + x
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             midgc = self.midlayer[i]
             #print('val, feat ', x[:5,:5], val[:5,:5])
-            x = midgc(torch.cat([x, fea, val],-1), adj)
+            x = midgc(torch.cat([fea, val],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = self.attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj)
+            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
+            val = val + x
 
 
         # output, no relu and dropput here.
