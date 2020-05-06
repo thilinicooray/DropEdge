@@ -351,26 +351,17 @@ class GCNModel_org(nn.Module):
 
     def forward(self, fea, adj):
 
-        powered_adj_list = []
-
-        for p in range(len(self.midlayer)+1):
-            powered_adj = matrix_power(adj.cpu().detach().numpy(), p+2)
-            powered_adj = torch.from_numpy(powered_adj).float().to(torch.device('cuda'))
-            powered_adj_list.append(powered_adj)
-
-
         x = self.ingc(fea, adj)
 
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
 
-        #val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
+        val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
-        #val = val + x
+        val = val + x
 
-        print('adj ', adj[:5,:10], powered_adj_list[0][:5,:10], powered_adj_list[1][:5,:10],)
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
@@ -378,19 +369,19 @@ class GCNModel_org(nn.Module):
 
             midgc = self.midlayer[i]
             #print('val, feat ', x[:5,:5], val[:5,:5])
-            x = midgc(torch.cat([fea, x],-1), powered_adj_list[i])
+            x = midgc(torch.cat([fea, x],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            #val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask_adj/(i + 2))
-            #val = val + x
+            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
+            val = val + x
 
 
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
         #print('val, feat ', x[:5,:5], val[:5,:5])
 
-        x = self.outgc(torch.cat([fea, x],-1), powered_adj_list[-1])
+        x = self.outgc(torch.cat([fea, val],-1), adj)
         x = F.log_softmax(x, dim=1)
         return x
 
