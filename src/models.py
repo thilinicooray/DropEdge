@@ -368,7 +368,7 @@ class GCNModel_org(nn.Module):
         print(b[0,:50], a[0,:50])
 
 
-        c = torch.equal(b, a)
+        c = torch.equal(b[0,:50], a[0,:50])
         print(c)
 
 
