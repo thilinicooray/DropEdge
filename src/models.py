@@ -361,6 +361,8 @@ class GCNModel_org(nn.Module):
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
         val = val + x
+        a = torch.mm(adj, adj)
+        print('adj ', adj[:5,:5], a.size(), a[:5,:5])
 
 
         # mid block connections
@@ -368,15 +370,11 @@ class GCNModel_org(nn.Module):
         for i in range(len(self.midlayer)):
 
             midgc = self.midlayer[i]
-            #print('val, feat ', x[:5,:5], val[:5,:5])
             x = midgc(torch.cat([fea, val],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
-
-            mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
-            val = F.normalize(mfb_sign_sqrt)
             val = val + x
 
 
