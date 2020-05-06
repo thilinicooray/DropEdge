@@ -361,13 +361,15 @@ class GCNModel_org(nn.Module):
         val = F.normalize(mfb_sign_sqrt)'''
         val = val + x
 
+        mask_adj = adj
+
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
 
             powered_adj = matrix_power(adj.cpu().detach().numpy(), i+2)
             powered_adj = torch.from_numpy(powered_adj).float().to(torch.device('cuda'))
-
+            mask_adj = mask_adj + powered_adj
 
             midgc = self.midlayer[i]
             #print('val, feat ', x[:5,:5], val[:5,:5])
@@ -375,7 +377,7 @@ class GCNModel_org(nn.Module):
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), powered_adj + adj)
+            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask_adj/(i + 2))
             val = val + x
 
 
