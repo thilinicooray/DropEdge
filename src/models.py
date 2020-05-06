@@ -360,7 +360,7 @@ class GCNModel_org(nn.Module):
 
         val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
 
-        print('val 1', val [:5,:10])
+        print('val first', val [:5,:10])
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
