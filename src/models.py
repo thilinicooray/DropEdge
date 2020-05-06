@@ -350,6 +350,15 @@ class GCNModel_org(nn.Module):
             return mu
 
     def forward(self, fea, adj):
+
+        powered_adj_list = []
+
+        for p in range(len(self.midlayer)+1):
+            powered_adj = matrix_power(adj.cpu().detach().numpy(), p+2)
+            powered_adj = torch.from_numpy(powered_adj).float().to(torch.device('cuda'))
+            powered_adj_list.append(powered_adj)
+
+
         x = self.ingc(fea, adj)
 
         x = F.dropout(x, self.dropout, training=self.training)
@@ -361,19 +370,13 @@ class GCNModel_org(nn.Module):
         val = F.normalize(mfb_sign_sqrt)'''
         #val = val + x
 
-        mask_adj = adj
-
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
 
-            powered_adj = matrix_power(adj.cpu().detach().numpy(), i+2)
-            powered_adj = torch.from_numpy(powered_adj).float().to(torch.device('cuda'))
-            mask_adj = mask_adj + powered_adj
-
             midgc = self.midlayer[i]
             #print('val, feat ', x[:5,:5], val[:5,:5])
-            x = midgc(torch.cat([fea, x],-1), powered_adj)
+            x = midgc(torch.cat([fea, x],-1), powered_adj_list[i])
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
@@ -384,9 +387,8 @@ class GCNModel_org(nn.Module):
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
         #print('val, feat ', x[:5,:5], val[:5,:5])
-        powered_adj = matrix_power(adj.cpu().detach().numpy(), len(self.midlayer)+2)
-        powered_adj = torch.from_numpy(powered_adj).float().to(torch.device('cuda'))
-        x = self.outgc(torch.cat([fea, x],-1), powered_adj)
+
+        x = self.outgc(torch.cat([fea, x],-1), powered_adj_list[-1])
         x = F.log_softmax(x, dim=1)
         return x
 
