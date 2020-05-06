@@ -355,11 +355,11 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
 
-        val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
+        #val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
-        val = val + x
+        #val = val + x
 
         mask_adj = adj
 
@@ -373,18 +373,20 @@ class GCNModel_org(nn.Module):
 
             midgc = self.midlayer[i]
             #print('val, feat ', x[:5,:5], val[:5,:5])
-            x = midgc(torch.cat([fea, val],-1), adj)
+            x = midgc(torch.cat([fea, x],-1), powered_adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask_adj/(i + 2))
-            val = val + x
+            #val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask_adj/(i + 2))
+            #val = val + x
 
 
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
         #print('val, feat ', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([fea, val],-1), adj)
+        powered_adj = matrix_power(adj.cpu().detach().numpy(), len(self.midlayer)+2)
+        powered_adj = torch.from_numpy(powered_adj).float().to(torch.device('cuda'))
+        x = self.outgc(torch.cat([fea, x],-1), powered_adj)
         x = F.log_softmax(x, dim=1)
         return x
 
