@@ -309,10 +309,6 @@ class GCNModel_org(nn.Module):
         self.query_proj = nn.Linear(nhid,nhid)
         self.value_proj = nn.Linear(nhid,nhid)
 
-        self.key_proj1 = nn.Linear(nclass,nclass)
-        self.query_proj1 = nn.Linear(nclass,nclass)
-        self.value_proj1 = nn.Linear(nclass,nclass)
-
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
@@ -386,8 +382,6 @@ class GCNModel_org(nn.Module):
         #print('val, feat ', x[:5,:5], val[:5,:5])
 
         x = self.outgc(torch.cat([fea, val],-1), adj)
-        val = self.attention(self.key_proj1(x), self.query_proj1(x), self.key_proj1(x), adj)
-        val = val + x
         x = F.log_softmax(val, dim=1)
         return x
 
