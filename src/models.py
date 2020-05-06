@@ -377,7 +377,7 @@ class GCNModel_org(nn.Module):
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask)
+            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask+adj)
             val = val + x
 
             mask = torch.mm(mask, flag_adj)
