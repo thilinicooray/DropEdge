@@ -353,7 +353,7 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
 
-        val = torch.sigmoid(self.attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj))
+        val = self.attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj)
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
@@ -364,11 +364,12 @@ class GCNModel_org(nn.Module):
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = torch.sigmoid(self.attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj))
+            val = self.attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj)
 
 
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
+        print('val, feat ', x[:5,:5], val[:5,:5])
         x = self.outgc(torch.cat([x, fea, val],-1), adj)
         x = F.log_softmax(x, dim=1)
         return x
