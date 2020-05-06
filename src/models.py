@@ -315,7 +315,7 @@ class GCNModel_org(nn.Module):
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid*2 +nfeat, nclass, outactivation, withbn, withloop)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
@@ -353,11 +353,11 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
 
-        val = self.attention(self.key_proj(x), self.key_proj(x), self.key_proj(x), adj)
+        val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(x+val)) - torch.sqrt(F.relu(-(x+val)))
         val = F.normalize(mfb_sign_sqrt)'''
-        val = val + x
+        #val = val + x
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
@@ -374,7 +374,7 @@ class GCNModel_org(nn.Module):
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
         #print('val, feat ', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([fea, val],-1), adj)
+        x = self.outgc(torch.cat([x,fea, val],-1), adj)
         x = F.log_softmax(x, dim=1)
         return x
 
