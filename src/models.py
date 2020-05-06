@@ -309,9 +309,9 @@ class GCNModel_org(nn.Module):
         self.query_proj = nn.Linear(nhid,nhid)
         self.value_proj = nn.Linear(nhid,nhid)
 
-        self.key_proj1 = nn.Linear(nhid,nclass)
-        self.query_proj1 = nn.Linear(nhid,nclass)
-        self.value_proj1 = nn.Linear(nhid,nclass)
+        self.key_proj1 = nn.Linear(nclass,nclass)
+        self.query_proj1 = nn.Linear(nclass,nclass)
+        self.value_proj1 = nn.Linear(nclass,nclass)
 
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
