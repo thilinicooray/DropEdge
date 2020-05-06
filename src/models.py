@@ -351,6 +351,8 @@ class GCNModel_org(nn.Module):
 
     def forward(self, fea, adj):
 
+        flag_adj = adj.masked_fill(adj > 0, 1)
+
         x = self.ingc(fea, adj)
 
         x = F.dropout(x, self.dropout, training=self.training)
@@ -362,14 +364,8 @@ class GCNModel_org(nn.Module):
         val = F.normalize(mfb_sign_sqrt)'''
         val = val + x
 
-        b = adj.masked_fill(adj > 0, 1)
-        a = torch.mm(b, b)
-        a = a.masked_fill(a > 0, 1)
-        #print(b[0,:150], a[0,:150])
 
-
-        c = torch.equal(b[0], a[0])
-        print(c)
+        mask = torch.mm(flag_adj, flag_adj)
 
 
         # mid block connections
@@ -381,8 +377,10 @@ class GCNModel_org(nn.Module):
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
+            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask)
             val = val + x
+
+            mask = torch.mm(mask, flag_adj)
 
 
         # output, no relu and dropput here.
