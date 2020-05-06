@@ -5,6 +5,8 @@ import torch.nn.functional as F
 from layers import *
 from torch.nn.parameter import Parameter
 
+from numpy.linalg import matrix_power
+
 device = torch.device("cuda:0")
 
 
@@ -362,13 +364,18 @@ class GCNModel_org(nn.Module):
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
+
+            powered_adj = matrix_power(adj.cpu().detach().numpy(), i+2)
+            powered_adj = torch.from_numpy(powered_adj).float().to(torch.device('cuda'))
+
+
             midgc = self.midlayer[i]
             #print('val, feat ', x[:5,:5], val[:5,:5])
             x = midgc(torch.cat([fea, val],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
+            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), powered_adj)
             val = val + x
 
 
