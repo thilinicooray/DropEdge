@@ -374,7 +374,7 @@ class GCNModel_org(nn.Module):
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
         #print('val, feat ', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([x,fea, val],-1), adj)
+        x = self.outgc(torch.cat([fea,x, val],-1), adj)
         x = F.log_softmax(x, dim=1)
         return x
 
