@@ -361,8 +361,11 @@ class GCNModel_org(nn.Module):
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
         val = val + x
-        a = torch.mm(adj, adj)
-        print('adj ', adj[:5,:5], a.size(), a[:5,:5])
+
+        b = adj.masked_fill(adj > 0, 1)
+        a = torch.mm(b, b)
+        c = torch.equal(b, a)
+        print(c)
 
 
         # mid block connections
