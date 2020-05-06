@@ -332,7 +332,7 @@ class GCNModel_org(nn.Module):
 
         if mask is not None:
             scores = scores.masked_fill(mask > 0, -1e9)
-        p_attn = F.softmax(scores, dim = -1)
+        p_attn = 1.0 - F.softmax(scores, dim = -1)
         if dropout is not None:
             p_attn = F.dropout(p_attn, dropout, training=self.training)
 
@@ -356,7 +356,7 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
 
-        val = self.attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj)
+        val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
