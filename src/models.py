@@ -355,8 +355,9 @@ class GCNModel_org(nn.Module):
 
         val = self.attention(self.key_proj(x), self.query_proj(x), self.value_proj(x), adj)
 
-        mfb_sign_sqrt = torch.sqrt(F.relu(x*val)) - torch.sqrt(F.relu(-(x*val)))
-        val = F.normalize(mfb_sign_sqrt)
+        '''mfb_sign_sqrt = torch.sqrt(F.relu(x+val)) - torch.sqrt(F.relu(-(x+val)))
+        val = F.normalize(mfb_sign_sqrt)'''
+        val = val + x
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
