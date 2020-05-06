@@ -370,6 +370,8 @@ class GCNModel_org(nn.Module):
         val = F.normalize(mfb_sign_sqrt)'''
         #val = val + x
 
+        print('adj ', adj[:5,:10], powered_adj_list[0][:5,:10], powered_adj_list[1][:5,:10],)
+
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
