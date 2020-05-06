@@ -360,11 +360,11 @@ class GCNModel_org(nn.Module):
 
         val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
 
-        print('val first', val [:5,:10])
+        #print('val first', val [:5,:10])
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
-        val = val + x
+        val_in = val + x
 
 
         mask = torch.mm(flag_adj, flag_adj)
@@ -375,13 +375,13 @@ class GCNModel_org(nn.Module):
         for i in range(len(self.midlayer)):
 
             midgc = self.midlayer[i]
-            x = midgc(torch.cat([fea, val],-1), adj)
+            x = midgc(torch.cat([fea, val_in],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask+adj)
-            print('val ',i, val [:5,:10])
-            val = val + x
+            val = val + self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask+adj)
+            #print('val ',i, val [:5,:10])
+            val_in = val + x
 
             mask = torch.mm(mask, flag_adj)
 
