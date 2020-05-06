@@ -377,19 +377,19 @@ class GCNModel_org(nn.Module):
             mask = mask + torch.mm(mask, flag_adj)
 
             midgc = self.midlayer[i]
-            x = midgc(torch.cat([fea, F.relu(torch.tanh(val_in))],-1), adj)
+            x = midgc(torch.cat([fea, val_in],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = val * self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask)
-            print('val',i, F.relu(torch.tanh(val)) [:5,:10], x[:5,:10])
+            val = val + self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask)
+            print('val',i, val [:5,:10], x[:5,:10])
             val_in = val + x
 
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
         #print('val, feat ', x[:5,:5], val[:5,:5])
 
-        x = self.outgc(torch.cat([fea, F.relu(torch.tanh(val_in))],-1), adj)
+        x = self.outgc(torch.cat([fea, val_in],-1), adj)
         x = F.log_softmax(x, dim=1)
         return x
 
