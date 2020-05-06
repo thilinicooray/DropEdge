@@ -369,7 +369,7 @@ class GCNModel_org(nn.Module):
 
             midgc = self.midlayer[i]
             #print('val, feat ', x[:5,:5], val[:5,:5])
-            x = midgc(torch.cat([fea, x],-1), adj)
+            x = midgc(torch.cat([fea, val],-1), adj)
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
