@@ -367,7 +367,7 @@ class GCNModel_org(nn.Module):
         val_in = val + x
 
 
-        mask = torch.mm(flag_adj, flag_adj)
+        mask = torch.mm(flag_adj, flag_adj) + adj
 
 
         # mid block connections
@@ -379,11 +379,11 @@ class GCNModel_org(nn.Module):
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = val * self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask+adj)
+            val = val * self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask)
             #print('val ',i, val [:5,:10])
             val_in = val + x
 
-            mask = torch.mm(mask, flag_adj)
+            mask = mask + torch.mm(mask, flag_adj)
 
 
         # output, no relu and dropput here.
