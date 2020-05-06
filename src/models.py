@@ -383,7 +383,7 @@ class GCNModel_org(nn.Module):
             x = F.dropout(x, self.dropout, training=self.training)
             val = val + self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask)
             #print('val',i, val [:5,:10], x[:5,:10])
-            val_in = val + x
+            val_in = F.relu(val + x)
 
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
