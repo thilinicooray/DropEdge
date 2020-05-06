@@ -382,7 +382,9 @@ class GCNModel_org(nn.Module):
         #print('val, feat ', x[:5,:5], val[:5,:5])
 
         x = self.outgc(torch.cat([fea, val],-1), adj)
-        x = F.log_softmax(x, dim=1)
+        val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
+        val = val + x
+        x = F.log_softmax(val, dim=1)
         return x
 
 # Modified GCN
