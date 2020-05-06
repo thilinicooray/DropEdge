@@ -379,7 +379,7 @@ class GCNModel_org(nn.Module):
             #x = midgc(x, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            val = val + self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask+adj)
+            val = val * self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask+adj)
             #print('val ',i, val [:5,:10])
             val_in = val + x
 
