@@ -374,9 +374,10 @@ class GCNModel_org(nn.Module):
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
-            val = val + x
+
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
             val = F.normalize(mfb_sign_sqrt)
+            val = val + x
 
 
         # output, no relu and dropput here.
