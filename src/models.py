@@ -315,7 +315,7 @@ class GCNModel_org(nn.Module):
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
@@ -375,7 +375,7 @@ class GCNModel_org(nn.Module):
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
         #print('val, feat ', x[:5,:5], val[:5,:5])
-        x = self.outgc(val, adj)
+        x = self.outgc(torch.cat([fea, val],-1), adj)
         x = F.log_softmax(x, dim=1)
         return x
 
