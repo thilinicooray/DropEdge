@@ -367,12 +367,14 @@ class GCNModel_org(nn.Module):
         val_in = val + x
 
 
-        mask = torch.mm(flag_adj, flag_adj) + adj
+        mask = flag_adj
 
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
+
+            mask = mask + torch.mm(mask, flag_adj)
 
             midgc = self.midlayer[i]
             x = midgc(torch.cat([fea, F.relu(torch.tanh(val_in))],-1), adj)
@@ -382,9 +384,6 @@ class GCNModel_org(nn.Module):
             val = val * self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask)
             #print('val ',i, val [:5,:10])
             val_in = val + x
-
-            mask = mask + torch.mm(mask, flag_adj)
-
 
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
