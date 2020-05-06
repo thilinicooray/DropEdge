@@ -365,10 +365,10 @@ class GCNModel_org(nn.Module):
         b = adj.masked_fill(adj > 0, 1)
         a = torch.mm(b, b)
         a = a.masked_fill(a > 0, 1)
-        print(b[0,:150], a[0,:150])
+        #print(b[0,:150], a[0,:150])
 
 
-        c = torch.equal(b, a)
+        c = torch.equal(b[0], a[0])
         print(c)
 
 
