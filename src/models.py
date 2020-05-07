@@ -366,11 +366,7 @@ class GCNModel_org(nn.Module):
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
-        current_q = self.proj(torch.cat([x,fea],-1))
-
-        val_in = val * current_q
-        mfb_sign_sqrt = torch.sqrt(F.relu(val_in)) - torch.sqrt(F.relu(-(val_in)))
-        val_in = F.normalize(mfb_sign_sqrt)
+        val_in = val + x
 
 
         mask = flag_adj
