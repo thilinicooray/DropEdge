@@ -389,7 +389,7 @@ class GCNModel_org(nn.Module):
             midquery = self.querylayer[i]
             x = midgc(torch.cat([fea, val_in],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
-            key = midkey(torch.cat([x,fea],-1))
+            key = midkey(x)
             query = midquery(fea)
             val = val + self.attention(key, query, key, mask)
             val_in = val + x
