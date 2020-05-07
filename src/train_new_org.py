@@ -30,7 +30,7 @@ parser.add_argument('--no_cuda', action='store_true', default=False,
 parser.add_argument('--fastmode', action='store_true', default=False,
                     help='Disable validation during training.')
 parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-parser.add_argument('--epochs', type=int, default=800,
+parser.add_argument('--epochs', type=int, default=200,
                     help='Number of epochs to train.')
 parser.add_argument('--lr', type=float, default=0.02,
                     help='Initial learning rate.')
