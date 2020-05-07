@@ -385,12 +385,12 @@ class GCNModel_org(nn.Module):
             mask = mask + torch.mm(mask, flag_adj)
 
             midgc = self.midlayer[i]
-            midkey = self.keylayer[i]
-            midquery = self.querylayer[i]
+            #midkey = self.keylayer[i]
+            #midquery = self.querylayer[i]
             x = midgc(torch.cat([fea, val_in],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
-            key = midkey(torch.cat([x,fea],-1))
-            query = midquery(x)
+            key = self.key_proj(torch.cat([x,fea],-1))
+            query = self.query_proj(x)
             val = val + self.attention(key, query, key, mask)
             val_in = val + x
 
