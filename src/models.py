@@ -392,9 +392,11 @@ class GCNModel_org(nn.Module):
             key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
             val = val + self.attention(key, query, key, mask)
+            mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
+            val = F.normalize(mfb_sign_sqrt)
             val_in = val + x
 
-        print('val, x', x[:5,:5], val[:5,:5])
+        #print('val, x', x[:5,:5], val[:5,:5])
         x = self.outgc(torch.cat([fea, val_in],-1), adj)
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
