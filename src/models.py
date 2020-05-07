@@ -366,13 +366,13 @@ class GCNModel_org(nn.Module):
         #adj_con = torch.zeros_like(adj)
         key = self.key_proj(torch.cat([x,fea],-1))
 
-        val = self.attention(key, self.query_proj(x), key, adj)
+        #val = self.attention(key, self.query_proj(x), key, adj)
 
         #print('val first', val [:5,:10], x[:5,:10])
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
-        val_in = val + x
+        #val_in = val + x
 
 
         mask = flag_adj
@@ -385,19 +385,21 @@ class GCNModel_org(nn.Module):
             mask = mask + torch.mm(mask, flag_adj)
 
             midgc = self.midlayer[i]
-            midkey = self.keylayer[i]
-            midquery = self.querylayer[i]
-            x = midgc(torch.cat([fea, val_in],-1), adj)
+            #midkey = self.keylayer[i]
+            #midquery = self.querylayer[i]
+            x = midgc(torch.cat([fea, x],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
-            key = midkey(torch.cat([x,fea],-1))
+            mfb_sign_sqrt = torch.sqrt(F.relu(x)) - torch.sqrt(F.relu(-(x)))
+            x = F.normalize(mfb_sign_sqrt)
+            '''key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
             val = val + self.attention(key, query, key, mask)
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
             val = F.normalize(mfb_sign_sqrt)
-            val_in = val + x
+            val_in = val + x'''
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([fea, val_in],-1), adj)
+        x = self.outgc(torch.cat([fea, x],-1), adj)
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
         return x
