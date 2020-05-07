@@ -305,9 +305,9 @@ class GCNModel_org(nn.Module):
 
         self.dropout = dropout
 
-        self.key_proj = nn.Linear(nhid,nhid)
+        self.key_proj = nn.Linear(nhid+nfeat,nhid)
         self.query_proj = nn.Linear(nhid+nfeat,nhid)
-        self.value_proj = nn.Linear(nhid,nhid)
+        self.value_proj = nn.Linear(nhid+nfeat,nhid)
 
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
@@ -357,8 +357,9 @@ class GCNModel_org(nn.Module):
 
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
+        key = self.key_proj(torch.cat([x,fea],-1))
 
-        val = self.attention(self.key_proj(x), self.query_proj(torch.cat([x,fea],-1)), self.key_proj(x), adj)
+        val = self.attention(key, self.query_proj(torch.cat([x,fea],-1)), key, adj)
 
         #print('val first', val [:5,:10], x[:5,:10])
 
