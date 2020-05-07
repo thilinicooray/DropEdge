@@ -394,7 +394,7 @@ class GCNModel_org(nn.Module):
             val = val + self.attention(key, query, key, mask)
             val_in = val + x
 
-
+        print('val, x', x[:5,:5], val[:5,:5])
         x = self.outgc(torch.cat([fea, val_in],-1), adj)
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
