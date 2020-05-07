@@ -306,7 +306,7 @@ class GCNModel_org(nn.Module):
         self.dropout = dropout
 
         self.key_proj = nn.Linear(nhid,nhid)
-        self.query_proj = nn.Linear(nhid,nhid)
+        self.query_proj = nn.Linear(nfeat,nhid)
         self.value_proj = nn.Linear(nhid,nhid)
 
 
@@ -358,7 +358,7 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
 
-        val = self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), adj)
+        val = self.attention(self.key_proj(x), self.query_proj(fea), self.key_proj(x), adj)
 
         #print('val first', val [:5,:10], x[:5,:10])
 
@@ -383,7 +383,7 @@ class GCNModel_org(nn.Module):
             x = F.dropout(x, self.dropout, training=self.training)
             val = val + self.attention(self.key_proj(x), self.query_proj(x), self.key_proj(x), mask)
             #print('val',i, val [:5,:10], x[:5,:10])
-            val_in = F.relu(torch.tanh(val + x))
+            val_in = val + x
 
         # output, no relu and dropput here.
         #print('x', x[:5, :5])
