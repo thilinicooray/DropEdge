@@ -313,9 +313,15 @@ class GCNModel_org(nn.Module):
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
+        self.keylayer = nn.ModuleList()
+        self.querylayer = nn.ModuleList()
         for i in range(nhidlayer):
             gcb = GraphConvolutionBS(nhid+nfeat, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
+            key = nn.Linear(nhid+nfeat,nhid)
+            self.keylayer.append(key)
+            query = nn.Linear(nhid+nfeat,nhid)
+            self.querylayer.append(query)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
         self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
@@ -379,19 +385,15 @@ class GCNModel_org(nn.Module):
             mask = mask + torch.mm(mask, flag_adj)
 
             midgc = self.midlayer[i]
+            midkey = self.keylayer[i]
+            midquery = self.querylayer[i]
             x = midgc(torch.cat([fea, val_in],-1), adj)
-            #x = midgc(x, adj)
-            #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
-            key = self.key_proj(torch.cat([x,fea],-1))
-            query = self.query_proj(torch.cat([x,fea],-1))
-            val = val + self.attention(key, query, key, mask)
-            #print('val',i, val [:5,:10], x[:5,:10])
+            key = midkey(torch.cat([x,fea],-1))
+            query = midquery(torch.cat([x,fea],-1))
+            val = val + F.dropout(self.attention(key, query, key, mask), self.dropout, training=self.training)
             val_in = val + x
 
-        # output, no relu and dropput here.
-        #print('x', x[:5, :5])
-        #print('val, feat ', x[:5,:5], val[:5,:5])
 
         x = self.outgc(torch.cat([fea, val_in],-1), adj)
         #x = self.outgc(val_in, adj)
