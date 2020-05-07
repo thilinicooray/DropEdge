@@ -316,7 +316,7 @@ class GCNModel_org(nn.Module):
         self.keylayer = nn.ModuleList()
         self.querylayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid+nfeat, nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
             key = nn.Linear(nhid+nfeat,nhid)
             self.keylayer.append(key)
@@ -324,7 +324,7 @@ class GCNModel_org(nn.Module):
             self.querylayer.append(query)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
@@ -387,7 +387,8 @@ class GCNModel_org(nn.Module):
             midgc = self.midlayer[i]
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
-            x = midgc(torch.cat([fea, val_in],-1), adj)
+            #x = midgc(torch.cat([fea, val_in],-1), adj)
+            x = midgc(val_in, adj)
             x = F.dropout(x, self.dropout, training=self.training)
             key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
@@ -397,8 +398,8 @@ class GCNModel_org(nn.Module):
             val_in = val + x
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([fea, val_in],-1), adj)
-        #x = self.outgc(val_in, adj)
+        #x = self.outgc(torch.cat([fea, val_in],-1), adj)
+        x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
         return x
 
