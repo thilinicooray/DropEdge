@@ -306,7 +306,7 @@ class GCNModel_org(nn.Module):
         self.dropout = dropout
 
         self.key_proj = nn.Linear(nhid+nfeat,nhid)
-        self.query_proj = nn.Linear(nhid+nfeat,nhid)
+        self.query_proj = nn.Linear(nfeat,nhid)
         self.value_proj = nn.Linear(nhid+nfeat,nhid)
         self.proj = nn.Linear(nhid+nfeat,nhid)
 
@@ -318,7 +318,7 @@ class GCNModel_org(nn.Module):
         for i in range(nhidlayer):
             gcb = GraphConvolutionBS(nhid+nfeat, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
-            key = nn.Linear(nhid,nhid)
+            key = nn.Linear(nhid+nfeat,nhid)
             self.keylayer.append(key)
             query = nn.Linear(nfeat,nhid)
             self.querylayer.append(query)
@@ -366,7 +366,7 @@ class GCNModel_org(nn.Module):
         #adj_con = torch.zeros_like(adj)
         key = self.key_proj(torch.cat([x,fea],-1))
 
-        val = self.attention(key, self.query_proj(torch.cat([x,fea],-1)), key, adj)
+        val = self.attention(key, self.query_proj(fea), key, adj)
 
         #print('val first', val [:5,:10], x[:5,:10])
 
@@ -389,7 +389,7 @@ class GCNModel_org(nn.Module):
             midquery = self.querylayer[i]
             x = midgc(torch.cat([fea, val_in],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
-            key = midkey(x)
+            key = midkey(torch.cat([x,fea],-1))
             query = midquery(fea)
             val = val + self.attention(key, query, key, mask)
             val_in = val + x
