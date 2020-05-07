@@ -382,7 +382,7 @@ class GCNModel_org(nn.Module):
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
 
-            mask = torch.mm(mask, flag_adj)
+            mask = mask + torch.mm(mask, flag_adj)
 
             midgc = self.midlayer[i]
             midkey = self.keylayer[i]
@@ -391,7 +391,7 @@ class GCNModel_org(nn.Module):
             x = F.dropout(x, self.dropout, training=self.training)
             key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
-            val = self.attention(key, query, key, mask)
+            val = val + self.attention(key, query, key, mask)
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
             val = F.normalize(mfb_sign_sqrt)
             val_in = val + x
