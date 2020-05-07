@@ -305,7 +305,7 @@ class GCNModel_org(nn.Module):
 
         self.dropout = dropout
 
-        self.key_proj = nn.Linear(nfeat,nhid)
+        self.key_proj = nn.Linear(nhid+nfeat,nhid)
         self.query_proj = nn.Linear(nhid+nfeat,nhid)
         self.value_proj = nn.Linear(nhid+nfeat,nhid)
         self.proj = nn.Linear(nhid+nfeat,nhid)
@@ -364,7 +364,7 @@ class GCNModel_org(nn.Module):
 
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
-        key = self.key_proj(fea)
+        key = self.key_proj(torch.cat([x,fea],-1))
 
         val = self.attention(key, self.query_proj(torch.cat([x,fea],-1)), key, adj)
 
