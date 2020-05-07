@@ -308,6 +308,7 @@ class GCNModel_org(nn.Module):
         self.key_proj = nn.Linear(nhid+nfeat,nhid)
         self.query_proj = nn.Linear(nhid+nfeat,nhid)
         self.value_proj = nn.Linear(nhid+nfeat,nhid)
+        self.proj = nn.Linear(nhid+nfeat,nhid)
 
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
@@ -365,7 +366,9 @@ class GCNModel_org(nn.Module):
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
-        val_in = val + x
+        current_q = self.proj(torch.cat([x,fea],-1))
+
+        val_in = val * current_q
 
 
         mask = flag_adj
