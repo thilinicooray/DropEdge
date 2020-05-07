@@ -320,7 +320,7 @@ class GCNModel_org(nn.Module):
             self.midlayer.append(gcb)
             key = nn.Linear(nhid+nfeat,nhid)
             self.keylayer.append(key)
-            query = nn.Linear(nhid+nfeat,nhid)
+            query = nn.Linear(nfeat,nhid)
             self.querylayer.append(query)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
@@ -390,7 +390,7 @@ class GCNModel_org(nn.Module):
             x = midgc(torch.cat([fea, val_in],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
             key = midkey(torch.cat([x,fea],-1))
-            query = midquery(torch.cat([x,fea],-1))
+            query = midquery(fea)
             val = val + self.attention(key, query, key, mask)
             val_in = val + x
 
