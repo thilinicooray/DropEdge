@@ -391,7 +391,7 @@ class GCNModel_org(nn.Module):
             x = F.dropout(x, self.dropout, training=self.training)
             key = midkey(torch.cat([x,fea],-1))
             query = midquery(torch.cat([x,fea],-1))
-            val = val + F.dropout(self.attention(key, query, key, mask), self.dropout, training=self.training)
+            val = val + F.dropout(self.attention(key, query, key, mask), 0.5, training=self.training)
             val_in = val + x
 
 
