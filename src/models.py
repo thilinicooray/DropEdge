@@ -444,7 +444,7 @@ class GCNModel_org(nn.Module):
 
             val = F.normalize(mfb_sign_sqrt)
             #val_in = val + x
-            val_in = self.jointer(val, x)
+            val_in = self.jointer(x, val)
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([fea, val_in],-1), adj)
