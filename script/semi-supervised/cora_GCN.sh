@@ -6,10 +6,10 @@ python ./src/train_new_org.py \
     --seed 42 \
     --dataset cora \
     --type resgcn \
-    --nhiddenlayer 30 \
+    --nhiddenlayer 14 \
     --nbaseblocklayer 0 \
     --hidden 128 \
-    --epoch 600 \
+    --epoch 400 \
     --lr 0.007 \
     --weight_decay 1e-05 \
     --early_stopping 400 \
