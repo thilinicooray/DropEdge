@@ -439,11 +439,10 @@ class GCNModel_org(nn.Module):
             query = midquery(x)
             val = val + self.attention(key, query, key, mask)
             val = F.dropout(val, 0.2, training=self.training)
-            '''mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
+            mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
-            val = F.normalize(mfb_sign_sqrt)'''
-            val = self.norm(val)
-            val_in = val + x
+            val = F.normalize(mfb_sign_sqrt)
+            val_in = self.norm(val + x)
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([fea, val_in],-1), adj)
