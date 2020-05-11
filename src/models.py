@@ -441,7 +441,7 @@ class GCNModel_org(nn.Module):
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
             val = F.normalize(mfb_sign_sqrt)
-            val_in = val + x
+            val_in = F.relu(val) + x
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([fea, val_in],-1), adj)
