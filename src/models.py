@@ -183,13 +183,20 @@ class GCNModel(nn.Module):
         super(GCNModel, self).__init__()
 
         self.dropout = dropout
-
+        self.key_proj = nn.Linear(nhid+nfeat,nhid)
+        self.query_proj = nn.Linear(nhid,nhid)
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
+        self.keylayer = nn.ModuleList()
+        self.querylayer = nn.ModuleList()
         for i in range(nhidlayer):
             gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
+            key = nn.Linear(nhid+nfeat,nhid)
+            self.keylayer.append(key)
+            query = nn.Linear(nhid,nhid)
+            self.querylayer.append(query)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
         self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
@@ -212,7 +219,22 @@ class GCNModel(nn.Module):
         else:
             return mu
 
+    def attention(self, query, key, value, mask=None, dropout=None):
+        "Compute 'Scaled Dot Product Attention'"
+        d_k = query.size(-1)
+        scores = torch.matmul(query, key.transpose(-2, -1)) \
+                 / math.sqrt(d_k)
+
+        if mask is not None:
+            scores = scores.masked_fill(mask > 0, -1e9)
+        p_attn = F.softmax(scores, dim = -1)
+        if dropout is not None:
+            p_attn = F.dropout(p_attn, dropout, training=self.training)
+
+        return torch.matmul(p_attn, value)
+
     def forward(self, fea, adj):
+        flag_adj = adj.masked_fill(adj > 0, 1)
         x = self.ingc(fea, adj)
 
         x = F.dropout(x, self.dropout, training=self.training)
@@ -228,15 +250,28 @@ class GCNModel(nn.Module):
         masked_adj = torch.where(adj > 0, adj1, zero_vec)
         adj_con = F.softmax(masked_adj, dim=1)
 
+        key = self.key_proj(torch.cat([x,fea],-1))
+
+        val = self.attention(key, self.query_proj(x), key, adj)
+
+
+        val_in = val + x
+
+
+        mask = flag_adj
+
 
 
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
+            mask = mask + torch.mm(mask, flag_adj)
             midgc = self.midlayer[i]
+            midkey = self.keylayer[i]
+            midquery = self.querylayer[i]
 
             #x = midgc(torch.cat([x, fea],-1), adj)
-            x = midgc(x, adj)
+            x = midgc(val_in, adj)
             #x = self.norm(x)
             x = F.dropout(x, self.dropout, training=self.training)
             #vae
@@ -251,8 +286,18 @@ class GCNModel(nn.Module):
             masked_adj = torch.where(adj > 0, adj1, zero_vec)
             adj_con =  F.softmax(adj_con +masked_adj, dim=1)
 
+            key = midkey(torch.cat([x,fea],-1))
+            query = midquery(x)
+            val = val + self.attention(key, query, key, mask)
+            val = F.dropout(val, 0.2, training=self.training)
+            mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
+
+            val = F.normalize(mfb_sign_sqrt)
+            val_in = val + x
+
+
         # output, no relu and dropput here.
-        x = self.outgc(x, adj)
+        x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
         return adj_con//(len(self.midlayer) +  1) , mu, logvar, x
 

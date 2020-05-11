@@ -1,18 +1,18 @@
 #!/bin/bash
 
-python ./src/train_new_org.py \
+python ./src/train_new.py \
     --debug \
     --datapath data// \
     --seed 42 \
     --dataset cora \
     --type resgcn \
-    --nhiddenlayer 0 \
+    --nhiddenlayer 6 \
     --nbaseblocklayer 0 \
     --hidden 128 \
     --epoch 800 \
     --lr 0.007 \
     --weight_decay 1e-05 \
-    --early_stopping 600 \
+    --early_stopping 400 \
     --sampling_percent 1.0 \
     --dropout 0.8 \
     --normalization AugNormAdj --task_type semi \
