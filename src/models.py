@@ -375,6 +375,7 @@ class GCNModel_org(nn.Module):
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
+        self.jointer = nn.GRUCell(nhid, nhid, bias=True)
 
     def attention(self, query, key, value, mask=None, dropout=None):
         "Compute 'Scaled Dot Product Attention'"
@@ -442,8 +443,8 @@ class GCNModel_org(nn.Module):
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
             val = F.normalize(mfb_sign_sqrt)
-            val_in = val + x
-            val_in = torch.tanh(val_in) * torch.sigmoid(val_in)
+            #val_in = val + x
+            val_in = self.jointer(val, x)
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([fea, val_in],-1), adj)
