@@ -364,7 +364,7 @@ class GCNModel_org(nn.Module):
         for i in range(nhidlayer):
             gcb = GraphConvolutionBS(nhid*2 , nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
-            ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
+            ingc = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer_org.append(ingc)
             key = nn.Linear(nhid+nfeat,nhid)
             self.keylayer.append(key)
