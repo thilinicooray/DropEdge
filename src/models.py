@@ -362,7 +362,7 @@ class GCNModel_org(nn.Module):
         self.keylayer = nn.ModuleList()
         self.querylayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid*2 , nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid , nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
             ingc = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer_org.append(ingc)
@@ -372,7 +372,7 @@ class GCNModel_org(nn.Module):
             self.querylayer.append(query)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid*2, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
@@ -436,12 +436,12 @@ class GCNModel_org(nn.Module):
             midgc_org = self.midlayer_org[i]
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
-            x = midgc(torch.cat([orgx, val_in],-1), adj)
-            #x = midgc(val_in, adj)
+            #x = midgc(torch.cat([orgx, val_in],-1), adj)
+            x = midgc(val_in, current_layer_adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            orgx = midgc_org(x, current_layer_adj)
-            orgx = F.dropout(orgx, self.dropout, training=self.training)
+            #orgx = midgc_org(x, current_layer_adj)
+            #orgx = F.dropout(orgx, self.dropout, training=self.training)
 
             key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
@@ -455,8 +455,8 @@ class GCNModel_org(nn.Module):
             val_in = val + x
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([orgx, val_in],-1), adj)
-        #x = self.outgc(val_in, adj)
+        #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
+        x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
         return x
 
