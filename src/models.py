@@ -417,13 +417,13 @@ class GCNModel_org(nn.Module):
         #adj_con = torch.zeros_like(adj)
         key = self.key_proj(torch.cat([x,fea],-1))
 
-        val = self.attention(key, self.query_proj(x), key, adj, adj)
+        val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?
 
         #print('val first', val [:5,:10], x[:5,:10])
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
-        val_in = 0.9*val + 0.1*x
+        val_in = 0.8*val + 0.2*x
 
         mask = flag_adj
         orgx = x
@@ -455,7 +455,7 @@ class GCNModel_org(nn.Module):
             val = F.normalize(mfb_sign_sqrt)
             #gate to decide which amount should come from global and neighbours
 
-            val_in = 0.9*val + 0.1*x
+            val_in = 0.8*val + 0.2*x
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
