@@ -420,7 +420,7 @@ class GCNModel_org(nn.Module):
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
-        val_in = 0.3*val + 0.7*x
+        val_in = 0.2*val + 0.8*x
 
         mask = flag_adj
         orgx = x
@@ -452,7 +452,7 @@ class GCNModel_org(nn.Module):
             val = F.normalize(mfb_sign_sqrt)
             #gate to decide which amount should come from global and neighbours
 
-            val_in = 0.3*val + 0.7*x
+            val_in = 0.2*val + 0.8*x
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
