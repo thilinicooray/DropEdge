@@ -378,7 +378,6 @@ class GCNModel_org(nn.Module):
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
-        self.adj_proj
 
     def attention(self, query, key, value, mask=None, dropout=None):
         "Compute 'Scaled Dot Product Attention'"
