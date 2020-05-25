@@ -423,6 +423,7 @@ class GCNModel_org(nn.Module):
         val_in = val + x
 
         mask = flag_adj
+        orgx = x
 
 
         # mid block connections
