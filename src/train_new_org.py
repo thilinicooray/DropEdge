@@ -57,7 +57,7 @@ parser.add_argument('--inputlayer', default='gcn',
                     help="The input layer of the model.")
 parser.add_argument('--outputlayer', default='gcn',
                     help="The output layer of the model.")
-parser.add_argument('--hidden', type=int, default=128,
+parser.add_argument('--hidden', type=int, default=8,
                     help='Number of hidden units.')
 parser.add_argument('--dropout', type=float, default=0.5,
                     help='Dropout rate (1 - keep probability).')
