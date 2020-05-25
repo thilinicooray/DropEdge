@@ -386,12 +386,15 @@ class GCNModel_org(nn.Module):
                  / math.sqrt(d_k)
 
         if mask is not None:
-            scores = scores.masked_fill(mask > 0, -1e9)
-        p_attn = F.softmax(scores, dim = -1)
+            scores1 = scores.masked_fill(mask > 0, -1e9)
+            scores2 = scores.masked_fill(mask == 0, -1e9)
+        p_attn1 = F.softmax(scores1, dim = -1)
+        p_attn2 = F.softmax(scores2, dim = -1)
         if dropout is not None:
-            p_attn = F.dropout(p_attn, dropout, training=self.training)
+            p_attn1 = F.dropout(p_attn1, dropout, training=self.training)
+            p_attn2 = F.dropout(p_attn2, dropout, training=self.training)
 
-        return torch.matmul(p_attn, value)
+        return torch.matmul(p_attn1, value) + torch.matmul(p_attn2, value)
 
     def reset_parameters(self):
         pass
