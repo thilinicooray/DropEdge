@@ -379,7 +379,7 @@ class GCNModel_org(nn.Module):
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
 
-    def attention(self, query, key, value, mask=None, dropout=None):
+    def attention(self, query, key, value, adj, mask=None, dropout=None):
         "Compute 'Scaled Dot Product Attention'"
         d_k = query.size(-1)
         scores = torch.matmul(query, key.transpose(-2, -1)) \
@@ -387,7 +387,7 @@ class GCNModel_org(nn.Module):
 
         if mask is not None:
             scores1 = scores.masked_fill(mask > 0, -1e9)
-            scores2 = scores.masked_fill(mask == 0, -1e9)
+            scores2 = scores.masked_fill(adj == 0, -1e9)
         p_attn1 = F.softmax(scores1, dim = -1)
         p_attn2 = F.softmax(scores2, dim = -1)
         if dropout is not None:
@@ -417,7 +417,7 @@ class GCNModel_org(nn.Module):
         #adj_con = torch.zeros_like(adj)
         key = self.key_proj(torch.cat([x,fea],-1))
 
-        val = self.attention(key, self.query_proj(x), key, adj)
+        val = self.attention(key, self.query_proj(x), key, adj, adj)
 
         #print('val first', val [:5,:10], x[:5,:10])
 
@@ -448,7 +448,7 @@ class GCNModel_org(nn.Module):
 
             key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
-            val = val + self.attention(key, query, key, mask)
+            val = val + self.attention(key, query, key, adj, mask)
             #val = F.dropout(val, 0.2, training=self.training)
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
