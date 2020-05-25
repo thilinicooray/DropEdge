@@ -546,11 +546,11 @@ class GATModel_org(nn.Module):
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid+nfeat, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
         self.norm = PairNorm()
 
 
