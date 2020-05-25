@@ -358,11 +358,14 @@ class GCNModel_org(nn.Module):
 
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
+        self.midlayer_org = nn.ModuleList()
         self.keylayer = nn.ModuleList()
         self.querylayer = nn.ModuleList()
         for i in range(nhidlayer):
             gcb = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
+            ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
+            self.midlayer_org.append(ingc)
             key = nn.Linear(nhid+nfeat,nhid)
             self.keylayer.append(key)
             query = nn.Linear(nhid,nhid)
@@ -375,6 +378,7 @@ class GCNModel_org(nn.Module):
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
+        self.adj_proj
 
     def attention(self, query, key, value, mask=None, dropout=None):
         "Compute 'Scaled Dot Product Attention'"
@@ -425,15 +429,20 @@ class GCNModel_org(nn.Module):
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
-
-            mask = mask + torch.mm(mask, flag_adj)
+            current_layer_adj = torch.mm(mask, flag_adj)
+            mask = mask + current_layer_adj
 
             midgc = self.midlayer[i]
+            midgc_org = self.midlayer_org[i]
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
             #x = midgc(torch.cat([fea, val_in],-1), adj)
             x = midgc(val_in, adj)
             x = F.dropout(x, self.dropout, training=self.training)
+
+            orgx = midgc_org(fea, current_layer_adj)
+            orgx = F.dropout(orgx, self.dropout, training=self.training)
+
             key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
             val = val + self.attention(key, query, key, mask)
@@ -441,7 +450,9 @@ class GCNModel_org(nn.Module):
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
             val = F.normalize(mfb_sign_sqrt)
-            val_in = val + x
+            #gate to decide which amount should come from global and neighbours
+
+            val_in = val + x + orgx
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([fea, val_in],-1), adj)
@@ -543,7 +554,8 @@ class GATModel_org(nn.Module):
         self.proj = nn.Linear(nhid+nfeat,nhid)
 
 
-        self.ingc = GraphAttentionLayer(nfeat, nhid, activation, withbn, withloop)
+        #self.ingc = GraphAttentionLayer(nfeat, nhid, activation, withbn, withloop)
+        self.ingc = nn.Linear(nfeat, nhid)
         self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
             gcb = GraphAttentionLayer(nhid+nfeat, nhid, activation, withbn, withloop)
