@@ -440,7 +440,7 @@ class GCNModel_org(nn.Module):
             #x = midgc(val_in, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            orgx = midgc_org(fea, current_layer_adj)
+            orgx = midgc_org(x, current_layer_adj)
             orgx = F.dropout(orgx, self.dropout, training=self.training)
 
             key = midkey(torch.cat([x,fea],-1))
