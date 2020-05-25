@@ -420,7 +420,7 @@ class GCNModel_org(nn.Module):
 
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
-        val_in = 0.1*val + 0.9*x
+        val_in = 0.0*val + 1.0*x
 
         mask = flag_adj
         orgx = x
