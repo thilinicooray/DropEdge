@@ -113,7 +113,7 @@ nclass = sampler.nclass
 print("nclass: %d\tnfea:%d" % (nclass, nfeat))
 
 # The model
-model = GCNModel_org(nfeat=nfeat,
+model = GATModel_org(nfeat=nfeat,
                  nhid=args.hidden,
                  nclass=nclass,
                  nhidlayer=args.nhiddenlayer,
