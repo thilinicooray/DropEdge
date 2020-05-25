@@ -452,7 +452,7 @@ class GCNModel_org(nn.Module):
             val = F.normalize(mfb_sign_sqrt)
             #gate to decide which amount should come from global and neighbours
 
-            val_in = val + x
+            val_in = 0.7*val + 0.3*x
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
