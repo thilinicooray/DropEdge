@@ -378,9 +378,9 @@ class GCNModel_org(nn.Module):
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
-        self.rnn = nn.LSTM(
-            nhid, nhid, 2,
-            bidirectional=True,
+        self.rnn = nn.GRU(
+            nhid, nhid, 1,
+            bidirectional=False,
             dropout=0.0,
             batch_first=True)
 
@@ -469,7 +469,8 @@ class GCNModel_org(nn.Module):
         #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
         out, hidden = self.rnn(all)
         print('out ', out.size(), hidden.size())
-        x = self.outgc(out, adj)
+
+        x = self.outgc(out[:, -1], adj)
         x = F.log_softmax(x, dim=1)
         return x
 
