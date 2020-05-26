@@ -434,18 +434,14 @@ class GCNModel_org(nn.Module):
             mask = mask + current_layer_adj
 
             midgc = self.midlayer[i]
-            midgc_org = self.midlayer_org[i]
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
-            #x = midgc(torch.cat([orgx, val_in],-1), adj)
             x = midgc(val_in, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            #orgx = midgc_org(x, current_layer_adj)
-            #orgx = F.dropout(orgx, self.dropout, training=self.training)
 
             #key = midkey(torch.cat([x,fea],-1))
-            key = self.key_proj(x)
+            key = midkey(x)
             query = midquery(x)
             val = val + self.attention(key, query, key, adj, mask)
             #val = F.dropout(val, 0.2, training=self.training)
