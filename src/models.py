@@ -417,7 +417,7 @@ class GCNModel_org(nn.Module):
         flag_adj = adj.masked_fill(adj > 0, 1)
 
         x = self.ingc(fea, adj)
-        all = x.unsqueeze(1)
+
 
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
@@ -431,6 +431,7 @@ class GCNModel_org(nn.Module):
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
         val_in = 0.8*val + 0.2*x
+        all = val_in.unsqueeze(1)
 
         mask = flag_adj
         orgx = x
@@ -449,7 +450,7 @@ class GCNModel_org(nn.Module):
             #x = midgc(torch.cat([orgx, val_in],-1), adj)
             x = midgc(val_in, adj)
             x = F.dropout(x, self.dropout, training=self.training)
-            all = torch.cat((all.clone(), x.unsqueeze(1)), 1)
+
 
             #orgx = midgc_org(x, current_layer_adj)
             #orgx = F.dropout(orgx, self.dropout, training=self.training)
@@ -464,6 +465,7 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             val_in = 0.8*val + 0.2*x
+            all = torch.cat((all.clone(), val_in.unsqueeze(1)), 1)
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
