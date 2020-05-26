@@ -378,6 +378,13 @@ class GCNModel_org(nn.Module):
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
+        self.rnn = nn.LSTM(
+            nhid, nhid, 2,
+            bidirectional=True,
+            dropout=0.0,
+            batch_first=True)
+
+
 
     def attention(self, query, key, value, adj, mask=None, dropout=None):
         "Compute 'Scaled Dot Product Attention'"
@@ -409,6 +416,7 @@ class GCNModel_org(nn.Module):
         flag_adj = adj.masked_fill(adj > 0, 1)
 
         x = self.ingc(fea, adj)
+        all = x.unsqueeze(1)
 
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
@@ -440,6 +448,9 @@ class GCNModel_org(nn.Module):
             #x = midgc(torch.cat([orgx, val_in],-1), adj)
             x = midgc(val_in, adj)
             x = F.dropout(x, self.dropout, training=self.training)
+            print('x ', x.size())
+            all = torch.cat((all.clone(), x.unsqueeze(1)), 1)
+            print('all ', all.size())
 
             #orgx = midgc_org(x, current_layer_adj)
             #orgx = F.dropout(orgx, self.dropout, training=self.training)
@@ -451,7 +462,7 @@ class GCNModel_org(nn.Module):
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
             val = F.normalize(mfb_sign_sqrt)
-            #gate to decide which amount should come from global and neighbours
+            #TODO: gate to decide which amount should come from global and neighbours
 
             val_in = 0.8*val + 0.2*x
 
