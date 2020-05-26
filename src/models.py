@@ -467,7 +467,8 @@ class GCNModel_org(nn.Module):
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
-        out, _ = self.rnn(all)
+        out, hidden = self.rnn(all)
+        print('out ', out.size(), hidden.size())
         x = self.outgc(out, adj)
         x = F.log_softmax(x, dim=1)
         return x
