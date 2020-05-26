@@ -350,7 +350,7 @@ class GCNModel_org(nn.Module):
 
         self.dropout = dropout
 
-        self.key_proj = nn.Linear(nhid+nfeat,nhid)
+        self.key_proj = nn.Linear(nhid,nhid)
         self.query_proj = nn.Linear(nhid,nhid)
         self.value_proj = nn.Linear(nhid+nfeat,nhid)
         self.proj = nn.Linear(nhid+nfeat,nhid)
@@ -366,7 +366,7 @@ class GCNModel_org(nn.Module):
             self.midlayer.append(gcb)
             ingc = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer_org.append(ingc)
-            key = nn.Linear(nhid+nfeat,nhid)
+            key = nn.Linear(nhid,nhid)
             self.keylayer.append(key)
             query = nn.Linear(nhid,nhid)
             self.querylayer.append(query)
@@ -387,14 +387,11 @@ class GCNModel_org(nn.Module):
 
         if mask is not None:
             scores1 = scores.masked_fill(mask > 0, -1e9)
-            scores2 = scores.masked_fill(adj == 0, -1e9)
         p_attn1 = F.softmax(scores1, dim = -1)
-        p_attn2 = F.softmax(scores2, dim = -1)
         if dropout is not None:
             p_attn1 = F.dropout(p_attn1, dropout, training=self.training)
-            p_attn2 = F.dropout(p_attn2, dropout, training=self.training)
 
-        return torch.matmul(p_attn1, value) + torch.matmul(p_attn2, value)
+        return torch.matmul(p_attn1, value)
 
     def reset_parameters(self):
         pass
@@ -415,7 +412,8 @@ class GCNModel_org(nn.Module):
 
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
-        key = self.key_proj(torch.cat([x,fea],-1))
+        #key = self.key_proj(torch.cat([x,fea],-1))
+        key = self.key_proj(x)
 
         val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?
 
@@ -446,7 +444,8 @@ class GCNModel_org(nn.Module):
             #orgx = midgc_org(x, current_layer_adj)
             #orgx = F.dropout(orgx, self.dropout, training=self.training)
 
-            key = midkey(torch.cat([x,fea],-1))
+            #key = midkey(torch.cat([x,fea],-1))
+            key = self.key_proj(x)
             query = midquery(x)
             val = val + self.attention(key, query, key, adj, mask)
             #val = F.dropout(val, 0.2, training=self.training)
