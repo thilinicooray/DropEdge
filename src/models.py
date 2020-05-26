@@ -412,6 +412,7 @@ class GCNModel_org(nn.Module):
             return mu
 
     def forward(self, fea, adj):
+        self.rnn.flatten_parameters()
 
         flag_adj = adj.masked_fill(adj > 0, 1)
 
@@ -448,9 +449,7 @@ class GCNModel_org(nn.Module):
             #x = midgc(torch.cat([orgx, val_in],-1), adj)
             x = midgc(val_in, adj)
             x = F.dropout(x, self.dropout, training=self.training)
-            print('x ', x.size())
             all = torch.cat((all.clone(), x.unsqueeze(1)), 1)
-            print('all ', all.size())
 
             #orgx = midgc_org(x, current_layer_adj)
             #orgx = F.dropout(orgx, self.dropout, training=self.training)
@@ -468,7 +467,8 @@ class GCNModel_org(nn.Module):
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
-        x = self.outgc(val_in, adj)
+        out, _ = self.rnn(all)
+        x = self.outgc(out, adj)
         x = F.log_softmax(x, dim=1)
         return x
 
