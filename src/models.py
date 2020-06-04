@@ -407,7 +407,6 @@ class GCNModel_org(nn.Module):
             return mu
 
     def forward(self, fea, adj):
-        self.rnn.flatten_parameters()
 
         flag_adj = adj.masked_fill(adj > 0, 1)
 
