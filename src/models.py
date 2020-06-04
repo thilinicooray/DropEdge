@@ -372,8 +372,8 @@ class GCNModel_org(nn.Module):
             self.querylayer.append(query)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
-        #self.outgc = Dense(nhid, nclass, activation)
+        #self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
+        self.outgc = Dense(nhid, nclass, activation)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
