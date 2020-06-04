@@ -425,7 +425,7 @@ class GCNModel_org(nn.Module):
 
         mask = flag_adj
         orgx = x
-        #tot = val_in
+        tot = x
 
 
         # mid block connections
@@ -456,10 +456,10 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             val_in = 0.8*val + 0.2*x'''
-            #tot = tot + val_in
+            tot = tot + x
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([x, fea],-1), adj)
+        x = self.outgc(torch.cat([tot, fea],-1), adj)
 
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
