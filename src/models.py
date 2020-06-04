@@ -362,7 +362,7 @@ class GCNModel_org(nn.Module):
         self.keylayer = nn.ModuleList()
         self.querylayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid +nfeat, nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid , nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
             ingc = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer_org.append(ingc)
@@ -438,8 +438,8 @@ class GCNModel_org(nn.Module):
             midgc_org = self.midlayer_org[i]
             #midkey = self.keylayer[i]
             #midquery = self.querylayer[i]
-            x = midgc(torch.cat([x,fea],-1), adj)
-            #x = midgc(val_in, adj)
+            #x = midgc(torch.cat([x,fea],-1), adj)
+            x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
 
