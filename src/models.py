@@ -372,8 +372,8 @@ class GCNModel_org(nn.Module):
             self.querylayer.append(query)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        #self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
-        self.outgc = Dense(nhid, nclass, activation)
+        self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
+        #self.outgc = Dense(nhid, nclass, activation)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
@@ -428,6 +428,7 @@ class GCNModel_org(nn.Module):
 
         mask = flag_adj
         orgx = x
+        tot = val_in
 
 
         # mid block connections
@@ -458,11 +459,12 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             val_in = 0.8*val + 0.2*x
+            tot = tot + val_in
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
 
-        x = self.outgc(val_in, adj)
+        x = self.outgc(tot, adj)
         x = F.log_softmax(x, dim=1)
         return x
 
