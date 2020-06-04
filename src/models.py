@@ -373,17 +373,12 @@ class GCNModel_org(nn.Module):
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
         self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
+        #self.outgc = Dense(nhid, nclass, activation)
         self.norm = PairNorm()
 
         self.mu = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.logvar = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
-        self.rnn = nn.GRU(
-            nhid, nhid, 1,
-            bidirectional=False,
-            dropout=0.0,
-            batch_first=True)
-
 
 
     def attention(self, query, key, value, adj, mask=None, dropout=None):
@@ -431,7 +426,6 @@ class GCNModel_org(nn.Module):
         '''mfb_sign_sqrt = torch.sqrt(F.relu(val+x)) - torch.sqrt(F.relu(-(val+x)))
         val = F.normalize(mfb_sign_sqrt)'''
         val_in = 0.8*val + 0.2*x
-        all = val_in.unsqueeze(1)
 
         mask = flag_adj
         orgx = x
@@ -465,13 +459,11 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             val_in = 0.8*val + 0.2*x
-            all = torch.cat((all.clone(), val_in.unsqueeze(1)), 1)
 
         #print('val, x', x[:5,:5], val[:5,:5])
         #x = self.outgc(torch.cat([orgx, val_in],-1), adj)
-        out, hidden = self.rnn(all)
 
-        x = self.outgc(out[:, -1], adj)
+        x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
         return x
 
