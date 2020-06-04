@@ -421,7 +421,7 @@ class GCNModel_org(nn.Module):
         val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?
 
         
-        val_in = 0.8*val + 0.2*x
+        val_in = val + x
 
         mask = flag_adj
         orgx = x
@@ -450,7 +450,7 @@ class GCNModel_org(nn.Module):
             val = F.normalize(mfb_sign_sqrt)
             #TODO: gate to decide which amount should come from global and neighbours
 
-            val_in = 0.8*val + 0.2*x
+            val_in = val + x
             tot = tot + val_in
 
         #print('val, x', x[:5,:5], val[:5,:5])
