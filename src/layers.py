@@ -110,19 +110,15 @@ class GraphConvolutionBS(Module):
 
         # Self-loop
         if self.self_weight is not None:
-            print('self loop')
             output = output + torch.mm(input, self.self_weight)
 
         if self.bias is not None:
-            print('self bias')
             output = output + self.bias
         # BN
         if self.bn is not None:
-            print('bn')
             output = self.bn(output)
         # Res
         if self.res:
-            print('residual')
             return self.sigma(output) + input
         else:
             return self.sigma(output)

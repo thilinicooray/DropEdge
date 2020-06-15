@@ -518,7 +518,7 @@ class GCNModel_org(nn.Module):
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
         #self.outgc = Dense(nfeat, nclass, activation)
         self.norm = PairNorm()
 
