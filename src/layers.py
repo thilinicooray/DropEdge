@@ -107,7 +107,7 @@ class GraphConvolutionBS(Module):
     def forward(self, input, adj,idx):
         output = torch.mm(input, self.weight)
 
-        if ((idx + 2)%2 == 0):
+        if ((idx + 2)%4 == 0):
             output = torch.spmm(adj, output)
 
         # Self-loop
