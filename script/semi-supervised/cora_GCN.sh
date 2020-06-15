@@ -6,7 +6,7 @@ python ./src/train_new_org.py \
     --seed 42 \
     --dataset cora \
     --type resgcn \
-    --nhiddenlayer 14 \
+    --nhiddenlayer 30 \
     --nbaseblocklayer 0 \
     --hidden 128 \
     --epoch 400 \
@@ -14,7 +14,7 @@ python ./src/train_new_org.py \
     --weight_decay 1e-05 \
     --early_stopping 400 \
     --sampling_percent 1.0 \
-    --dropout 0.3 \
+    --dropout 0.8 \
     --normalization AugNormAdj --task_type semi \
      \
     
