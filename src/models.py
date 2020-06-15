@@ -518,8 +518,8 @@ class GCNModel_org(nn.Module):
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
-        #self.outgc = Dense(nhid, nclass, activation)
+        #self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        self.outgc = Dense(nfeat, nclass, activation)
         self.norm = PairNorm()
 
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
@@ -553,7 +553,7 @@ class GCNModel_org(nn.Module):
     def forward(self, fea, adj):
 
 
-        x = self.ingc(fea, adj)
+        '''x = self.ingc(fea, adj)
 
 
         x = F.dropout(x, self.dropout, training=self.training)
@@ -571,9 +571,9 @@ class GCNModel_org(nn.Module):
 
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([ fea,x],-1), adj)
+        x = self.outgc(torch.cat([ fea,x],-1), adj)'''
 
-        #x = self.outgc(val_in, adj)
+        x = self.outgc(fea, adj)
         x = F.log_softmax(x, dim=1)
         return x
 
