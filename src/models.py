@@ -302,7 +302,7 @@ class GCNModel(nn.Module):
         return adj_con//(len(self.midlayer) +  1) , mu, logvar, x
 
 
-class GCNModel_org(nn.Module):
+class GCNModel_global(nn.Module):
     """
        The model for the single kind of deepgcn blocks.
 
@@ -455,6 +455,123 @@ class GCNModel_org(nn.Module):
 
         #print('val, x', x[:5,:5], val[:5,:5])
         x = self.outgc(torch.cat([tot, fea],-1), adj)
+
+        #x = self.outgc(val_in, adj)
+        x = F.log_softmax(x, dim=1)
+        return x
+
+class GCNModel_org(nn.Module):
+    """
+       The model for the single kind of deepgcn blocks.
+
+       The model architecture likes:
+       inputlayer(nfeat)--block(nbaselayer, nhid)--...--outputlayer(nclass)--softmax(nclass)
+                           |------  nhidlayer  ----|
+       The total layer is nhidlayer*nbaselayer + 2.
+       All options are configurable.
+    """
+
+    def __init__(self,
+                 nfeat,
+                 nhid,
+                 nclass,
+                 nhidlayer,
+                 dropout,
+                 baseblock="mutigcn",
+                 inputlayer="gcn",
+                 outputlayer="gcn",
+                 nbaselayer=0,
+                 activation=lambda x: x,
+                 withbn=True,
+                 withloop=True,
+                 aggrmethod="add",
+                 mixmode=False):
+        """
+        Initial function.
+        :param nfeat: the input feature dimension.
+        :param nhid:  the hidden feature dimension.
+        :param nclass: the output feature dimension.
+        :param nhidlayer: the number of hidden blocks.
+        :param dropout:  the dropout ratio.
+        :param baseblock: the baseblock type, can be "mutigcn", "resgcn", "densegcn" and "inceptiongcn".
+        :param inputlayer: the input layer type, can be "gcn", "dense", "none".
+        :param outputlayer: the input layer type, can be "gcn", "dense".
+        :param nbaselayer: the number of layers in one hidden block.
+        :param activation: the activation function, default is ReLu.
+        :param withbn: using batch normalization in graph convolution.
+        :param withloop: using self feature modeling in graph convolution.
+        :param aggrmethod: the aggregation function for baseblock, can be "concat" and "add". For "resgcn", the default
+                           is "add", for others the default is "concat".
+        :param mixmode: enable cpu-gpu mix mode. If true, put the inputlayer to cpu.
+        """
+        super(GCNModel_org, self).__init__()
+
+        self.dropout = dropout
+
+        self.proj = nn.Linear(nhid+nfeat,nhid)
+
+
+        self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
+        self.midlayer = nn.ModuleList()
+        for i in range(nhidlayer):
+            gcb = GraphConvolutionBS(nhid +nfeat, nhid, activation, withbn, withloop)
+            self.midlayer.append(gcb)
+
+        outactivation = lambda x: x  # we donot need nonlinear activation here.
+        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        #self.outgc = Dense(nhid, nclass, activation)
+        self.norm = PairNorm()
+
+        self.dc = InnerProductDecoder(dropout, act=lambda x: x)
+
+
+    def attention(self, query, key, value, adj, mask=None, dropout=None):
+        "Compute 'Scaled Dot Product Attention'"
+        d_k = query.size(-1)
+        scores = torch.matmul(query, key.transpose(-2, -1)) \
+                 / math.sqrt(d_k)
+
+        if mask is not None:
+            scores1 = scores.masked_fill(mask > 0, -1e9)
+        p_attn1 = F.softmax(scores1, dim = -1)
+        if dropout is not None:
+            p_attn1 = F.dropout(p_attn1, dropout, training=self.training)
+
+        return torch.matmul(p_attn1, value)
+
+    def reset_parameters(self):
+        pass
+
+    def reparameterize(self, mu, logvar):
+        if self.training:
+            std = torch.exp(logvar)
+            eps = torch.randn_like(std)
+            return eps.mul(std).add_(mu)
+        else:
+            return mu
+
+    def forward(self, fea, adj):
+
+
+        x = self.ingc(fea, adj)
+
+
+        x = F.dropout(x, self.dropout, training=self.training)
+
+
+        # mid block connections
+        # for i in xrange(len(self.midlayer)):
+        for i in range(len(self.midlayer)):
+
+            midgc = self.midlayer[i]
+            x = midgc(torch.cat([x,fea],-1), adj)
+            x = F.dropout(x, self.dropout, training=self.training)
+
+
+
+
+        #print('val, x', x[:5,:5], val[:5,:5])
+        x = self.outgc(torch.cat([x, fea],-1), adj)
 
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
