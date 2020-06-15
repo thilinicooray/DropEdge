@@ -514,11 +514,11 @@ class GCNModel_org(nn.Module):
         self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
         self.midlayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid+nfeat , nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid , nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid, nclass, outactivation, withbn, withloop)
         #self.outgc = Dense(nfeat, nclass, activation)
         self.norm = PairNorm()
 
@@ -564,17 +564,17 @@ class GCNModel_org(nn.Module):
         for i in range(len(self.midlayer)):
 
             midgc = self.midlayer[i]
-            x = midgc(torch.cat([fea,x],-1), adj,i)
-            #x = midgc(x, adj,i)
+            #x = midgc(torch.cat([fea,x],-1), adj,i)
+            x = midgc(x, adj,i)
             x = F.dropout(x, self.dropout, training=self.training)
 
 
 
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([ fea,x],-1), adj, len((self.midlayer)))
+        #x = self.outgc(torch.cat([ fea,x],-1), adj, len((self.midlayer)))
 
-        #x = self.outgc(x, adj, len((self.midlayer)))
+        x = self.outgc(x, adj, len((self.midlayer)))
         x = F.log_softmax(x, dim=1)
         return x
 
