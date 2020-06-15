@@ -105,8 +105,8 @@ class GraphConvolutionBS(Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, adj):
-        output = torch.mm(input, self.weight)
-        #output = torch.spmm(adj, support)
+        support = torch.mm(input, self.weight)
+        output = torch.spmm(adj, support)
 
         # Self-loop
         if self.self_weight is not None:
