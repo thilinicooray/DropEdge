@@ -14,7 +14,7 @@ python ./src/train_new_org.py \
     --weight_decay 1e-05 \
     --early_stopping 400 \
     --sampling_percent 1.0 \
-    --dropout 0.8 \
+    --dropout 0.5 \
     --normalization AugNormAdj --task_type semi \
      \
     
