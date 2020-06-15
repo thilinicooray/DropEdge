@@ -553,7 +553,7 @@ class GCNModel_org(nn.Module):
     def forward(self, fea, adj):
 
 
-        x = self.ingc(fea, adj)
+        x = self.ingc(fea, adj,1)
 
 
         x = F.dropout(x, self.dropout, training=self.training)
@@ -564,7 +564,7 @@ class GCNModel_org(nn.Module):
         for i in range(len(self.midlayer)):
 
             midgc = self.midlayer[i]
-            x = midgc(torch.cat([fea,x],-1), adj)
+            x = midgc(torch.cat([fea,x],-1), adj,i)
             #x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
@@ -572,7 +572,7 @@ class GCNModel_org(nn.Module):
 
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([ fea,x],-1), adj)
+        x = self.outgc(torch.cat([ fea,x],-1), adj, len((self.midlayer))+2)
 
         #x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
