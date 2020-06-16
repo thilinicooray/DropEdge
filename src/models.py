@@ -357,7 +357,7 @@ class GCNModel_org(nn.Module):
 
 
         #self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
-        self.ingc = Dense(nfeat, nhid, activation)
+        self.outgc = Dense(nfeat, nhid, activation)
         self.midlayer = nn.ModuleList()
         self.midlayer_org = nn.ModuleList()
         self.keylayer = nn.ModuleList()
@@ -411,10 +411,10 @@ class GCNModel_org(nn.Module):
 
         flag_adj = adj.masked_fill(adj > 0, 1)
 
-        x = self.ingc(fea, adj)
+        x_enc = self.ingc(fea, adj)
 
 
-        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.dropout(x_enc, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
         #key = self.key_proj(torch.cat([x,fea],-1))
         key = self.key_proj(torch.cat([x,fea],-1))
@@ -422,11 +422,11 @@ class GCNModel_org(nn.Module):
         val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?
 
         
-        val_in = val + x
+        #val_in = val + x
 
         mask = flag_adj
         orgx = x
-        tot = val_in
+        tot = x
 
 
         # mid block connections
@@ -438,7 +438,7 @@ class GCNModel_org(nn.Module):
             midgc = self.midlayer[i]
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
-            x = midgc(torch.cat([fea, val_in],-1), adj)
+            x = midgc(torch.cat([fea, x],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
 
@@ -451,15 +451,31 @@ class GCNModel_org(nn.Module):
             val = F.normalize(mfb_sign_sqrt)
             #TODO: gate to decide which amount should come from global and neighbours
 
-            val_in = val + x
-            tot = tot + val_in
+            #val_in = val + x
+            tot = tot + x
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([fea, val_in],-1), adj)
+        last_rep = tot
+        x = self.outgc(torch.cat([fea, tot],-1), adj)
 
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
-        return x
+        rank_loss = self.rank_loss(x_enc, last_rep, val)
+        return x, rank_loss
+
+    def rank_loss(self, org_feat, local_rep, non_local_rep):
+        non_loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
+                               , non_local_rep.view(non_local_rep.size(0), non_local_rep.size(1), 1))
+
+        loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
+                                          , local_rep.view(local_rep.size(0), local_rep.size(1), 1))
+
+        margin = torch.bmm(non_local_rep.view(non_local_rep.size(0), 1, non_local_rep.size(1))
+                            , local_rep.view(local_rep.size(0), local_rep.size(1), 1))
+
+        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze() - loc_sim.squeeze() + non_loc_sim),0)
+
+        return marginal_rank_loss
 
 class GCNModel_org_org(nn.Module):
     """
