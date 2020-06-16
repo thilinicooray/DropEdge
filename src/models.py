@@ -467,8 +467,8 @@ class GCNModel_org(nn.Module):
 
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        rank_loss = self.rank_loss(x_enc, last_rep, val)
-        return x, rank_loss
+        #rank_loss = self.rank_loss(x_enc, last_rep, val)
+        return x, 0.0
 
     def rank_loss(self, org_feat, local_rep, non_local_rep):
         non_loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
