@@ -427,7 +427,7 @@ class GCNModel_org(nn.Module):
         val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?'''
 
         val = self.ingc_g(x, self.get_mask(adj))
-        #val_in = val + x
+        val_in = val + x
 
         mask = flag_adj
         orgx = x
@@ -444,10 +444,10 @@ class GCNModel_org(nn.Module):
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
             #x = midgc(torch.cat([x_enc, x],-1), adj)
-            x = midgc(x, adj)
+            x = midgc(val_in, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            new_val = midgc(val, self.get_mask(mask))
+            new_val = midgc(x, self.get_mask(mask))
             val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
@@ -458,14 +458,14 @@ class GCNModel_org(nn.Module):
             val = F.normalize(mfb_sign_sqrt)
             #TODO: gate to decide which amount should come from global and neighbours
 
-            #val_in = val + x
+            val_in = val + x
             #tot = tot + x
 
         #print('val, x', x[:5,:5], val[:5,:5])
         last_rep = x
         #x = self.outgc(torch.cat([x_enc, tot],-1), adj)
 
-        x = self.outgc(x, adj)
+        x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
         rank_loss = self.rank_loss(x_enc, last_rep, val)
         return x, rank_loss
