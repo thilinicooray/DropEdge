@@ -363,7 +363,7 @@ class GCNModel_org(nn.Module):
         self.keylayer = nn.ModuleList()
         self.querylayer = nn.ModuleList()
         for i in range(nhidlayer):
-            gcb = GraphConvolutionBS(nhid +nfeat, nhid, activation, withbn, withloop)
+            gcb = GraphConvolutionBS(nhid +nhid, nhid, activation, withbn, withloop)
             self.midlayer.append(gcb)
             ingc = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
             self.midlayer_org.append(ingc)
@@ -373,7 +373,7 @@ class GCNModel_org(nn.Module):
             self.querylayer.append(query)
 
         outactivation = lambda x: x  # we donot need nonlinear activation here.
-        self.outgc = GraphConvolutionBS(nhid+nfeat, nclass, outactivation, withbn, withloop)
+        self.outgc = GraphConvolutionBS(nhid+nhid, nclass, outactivation, withbn, withloop)
         #self.outgc = Dense(nhid, nclass, activation)
         self.norm = PairNorm()
 
@@ -438,7 +438,7 @@ class GCNModel_org(nn.Module):
             midgc = self.midlayer[i]
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
-            x = midgc(torch.cat([fea, x],-1), adj)
+            x = midgc(torch.cat([x_enc, x],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
 
@@ -456,7 +456,7 @@ class GCNModel_org(nn.Module):
 
         #print('val, x', x[:5,:5], val[:5,:5])
         last_rep = tot
-        x = self.outgc(torch.cat([fea, tot],-1), adj)
+        x = self.outgc(torch.cat([x_enc, tot],-1), adj)
 
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
@@ -476,7 +476,7 @@ class GCNModel_org(nn.Module):
 
         marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze() - non_loc_sim.squeeze() ),0)
 
-        return 100*marginal_rank_loss
+        return marginal_rank_loss
 
 class GCNModel_org_org(nn.Module):
     """
