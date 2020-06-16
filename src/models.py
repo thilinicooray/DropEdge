@@ -448,14 +448,14 @@ class GCNModel_org(nn.Module):
             x = F.dropout(x, self.dropout, training=self.training)
 
             new_val = midgc(x, self.get_mask(mask))
-            val = F.dropout(new_val, self.dropout, training=self.training)
+            val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
             val = val + self.attention(key, query, key, adj, mask)'''
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
-            val = val + F.normalize(mfb_sign_sqrt)
+            val = F.normalize(mfb_sign_sqrt)
             #TODO: gate to decide which amount should come from global and neighbours
 
             #val_in = val + x
@@ -483,7 +483,7 @@ class GCNModel_org(nn.Module):
 
         marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze() - non_loc_sim.squeeze() ),0)
 
-        return marginal_rank_loss
+        return 10*marginal_rank_loss
 
 class GCNModel_org_org(nn.Module):
     """
