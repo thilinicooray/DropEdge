@@ -433,8 +433,7 @@ class GCNModel_org(nn.Module):
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
             current_layer_adj = torch.mm(mask, flag_adj)
-            #mask = mask + current_layer_adj
-            mask = current_layer_adj
+            mask = mask + current_layer_adj
 
             midgc = self.midlayer[i]
             midkey = self.keylayer[i]
