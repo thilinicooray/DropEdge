@@ -473,9 +473,8 @@ class GCNModel_org(nn.Module):
         margin = torch.bmm(non_local_rep.view(non_local_rep.size(0), 1, non_local_rep.size(1))
                             , local_rep.view(local_rep.size(0), local_rep.size(1), 1))
 
-        print('loss size', margin.size(), org_feat.size())
 
-        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze() - loc_sim.squeeze() + non_loc_sim),0)
+        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze() - loc_sim.squeeze() + non_loc_sim.squeeze()),0)
         print('loss size', marginal_rank_loss.size())
 
         return marginal_rank_loss
