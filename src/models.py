@@ -444,10 +444,10 @@ class GCNModel_org(nn.Module):
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
             #x = midgc(torch.cat([x_enc, x],-1), adj)
-            x = midgc(val_in, adj)
+            x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            new_val = midgc(x, self.get_mask(mask))
+            new_val = midgc(val_in, self.get_mask(mask))
             val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
@@ -462,10 +462,10 @@ class GCNModel_org(nn.Module):
             #tot = tot + x
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        last_rep = x
+        last_rep = val_in
         #x = self.outgc(torch.cat([x_enc, tot],-1), adj)
 
-        x = self.outgc(val_in, adj)
+        x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
         rank_loss = self.rank_loss(x_enc, last_rep, val)
         return x, rank_loss
