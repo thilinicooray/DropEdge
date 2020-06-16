@@ -447,7 +447,7 @@ class GCNModel_org(nn.Module):
             x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            new_val = midgc(new_val, self.get_mask(mask))
+            new_val = midgc(x, self.get_mask(mask))
             val = F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
