@@ -416,16 +416,16 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
         #key = self.key_proj(torch.cat([x,fea],-1))
-        #key = self.key_proj(torch.cat([x,fea],-1))
+        key = self.key_proj(torch.cat([x,fea],-1))
 
-        #val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?
+        val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?
 
         
-        #val_in = val + x
+        val_in = val + x
 
         mask = flag_adj
         orgx = x
-        #tot = val_in
+        tot = val_in
 
 
         # mid block connections
@@ -435,14 +435,14 @@ class GCNModel_org(nn.Module):
             mask = mask + current_layer_adj
 
             midgc = self.midlayer[i]
-            #midkey = self.keylayer[i]
-            #midquery = self.querylayer[i]
-            x = midgc(torch.cat([x,fea],-1), adj)
+            midkey = self.keylayer[i]
+            midquery = self.querylayer[i]
+            x = midgc(torch.cat([val_in,fea],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
 
 
-            '''key = midkey(torch.cat([x,fea],-1))
+            key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
             val = val + self.attention(key, query, key, adj, mask)
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
@@ -451,10 +451,10 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             val_in = val + x
-            tot = tot + val_in'''
+            tot = tot + val_in
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([x, fea],-1), adj)
+        x = self.outgc(torch.cat([tot, fea],-1), adj)
 
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
