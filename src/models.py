@@ -409,7 +409,7 @@ class GCNModel_org(nn.Module):
 
     def get_mask(self, adj):
         fully_connected = torch.ones_like(adj).cuda()
-        mask = fully_connected.masked_fill(adj > 0, 0) + torch.eye(adj.size(0)).cuda()
+        mask = fully_connected.masked_fill(adj > 0, 0)
         return mask
 
     def forward(self, fea, adj):
@@ -447,7 +447,7 @@ class GCNModel_org(nn.Module):
             x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            new_val = midgc(x, self.get_mask(mask))
+            new_val = midgc(val, self.get_mask(mask))
             val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
