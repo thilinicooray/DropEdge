@@ -451,10 +451,10 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             val_in = val + x
-            tot = tot + val_in
+            #tot = tot + val_in
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([fea, tot],-1), adj)
+        x = self.outgc(torch.cat([fea, val_in],-1), adj)
 
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
