@@ -437,12 +437,12 @@ class GCNModel_org(nn.Module):
             midgc = self.midlayer[i]
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
-            x = midgc(torch.cat([val_in,fea],-1), adj)
+            x = midgc(torch.cat([x,fea],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
 
 
-            key = midkey(torch.cat([x,fea],-1))
+            '''key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
             val = val + self.attention(key, query, key, adj, mask)
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
@@ -451,10 +451,10 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             val_in = val + x
-            tot = tot + val_in
+            tot = tot + val_in'''
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([tot, fea],-1), adj)
+        x = self.outgc(torch.cat([x, fea],-1), adj)
 
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
