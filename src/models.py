@@ -437,7 +437,7 @@ class GCNModel_org(nn.Module):
             midgc = self.midlayer[i]
             midkey = self.keylayer[i]
             midquery = self.querylayer[i]
-            x = midgc(torch.cat([val_in,fea],-1), adj)
+            x = midgc(torch.cat([fea, val_in],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
 
@@ -454,7 +454,7 @@ class GCNModel_org(nn.Module):
             tot = tot + val_in
 
         #print('val, x', x[:5,:5], val[:5,:5])
-        x = self.outgc(torch.cat([tot, fea],-1), adj)
+        x = self.outgc(torch.cat([fea, tot],-1), adj)
 
         #x = self.outgc(val_in, adj)
         x = F.log_softmax(x, dim=1)
