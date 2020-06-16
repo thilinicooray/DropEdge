@@ -445,7 +445,7 @@ class GCNModel_org(nn.Module):
             midquery = self.querylayer[i]
             #x = midgc(torch.cat([x_enc, x],-1), adj)
             x = midgc(x, adj)
-            x = F.dropout(x, self.dropout, training=self.training)
+            x = val + F.dropout(x, self.dropout, training=self.training)
 
             new_val = midgc(x, self.get_mask(mask))
             val = F.dropout(new_val, self.dropout, training=self.training)
