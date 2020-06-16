@@ -417,9 +417,9 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x_enc, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
         #key = self.key_proj(torch.cat([x,fea],-1))
-        '''key = self.key_proj(torch.cat([x,fea],-1))
+        key = self.key_proj(torch.cat([x,fea],-1))
 
-        val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?'''
+        val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?
 
         
         #val_in = val + x
@@ -444,12 +444,12 @@ class GCNModel_org(nn.Module):
 
 
 
-            '''key = midkey(torch.cat([x,fea],-1))
+            key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
             val = val + self.attention(key, query, key, adj, mask)
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
-            val = F.normalize(mfb_sign_sqrt)'''
+            val = F.normalize(mfb_sign_sqrt)
             #TODO: gate to decide which amount should come from global and neighbours
 
             #val_in = val + x
@@ -461,8 +461,8 @@ class GCNModel_org(nn.Module):
 
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        #rank_loss = self.rank_loss(x_enc, last_rep, val)
-        return x, 0.0
+        rank_loss = self.rank_loss(x_enc, last_rep, val)
+        return x, rank_loss
 
     def rank_loss(self, org_feat, local_rep, non_local_rep):
         non_loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
