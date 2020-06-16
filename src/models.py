@@ -446,7 +446,7 @@ class GCNModel_org(nn.Module):
 
             key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
-            val = val + self.attention(key, query, key, adj, mask)
+            val = self.attention(key, query, key, adj, mask)
             mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
             val = F.normalize(mfb_sign_sqrt)
@@ -475,7 +475,7 @@ class GCNModel_org(nn.Module):
                             , local_rep.view(local_rep.size(0), local_rep.size(1), 1))
 
 
-        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), non_loc_sim.squeeze() - loc_sim.squeeze() ),0)
+        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze() - non_loc_sim.squeeze() ),0)
 
         return marginal_rank_loss
 
