@@ -477,7 +477,7 @@ class GCNModel_org(nn.Module):
 
         marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze() - non_loc_sim.squeeze() ),0)
 
-        return marginal_rank_loss
+        return 10*marginal_rank_loss
 
 class GCNModel_org_org(nn.Module):
     """
