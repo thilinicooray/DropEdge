@@ -416,16 +416,16 @@ class GCNModel_org(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
         #key = self.key_proj(torch.cat([x,fea],-1))
-        key = self.key_proj(torch.cat([x,fea],-1))
+        #key = self.key_proj(torch.cat([x,fea],-1))
 
-        val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?
+        #val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?
 
         
-        val_in = val + x
+        #val_in = val + x
 
         mask = flag_adj
         orgx = x
-        tot = val_in
+        #tot = val_in
 
 
         # mid block connections
@@ -435,8 +435,8 @@ class GCNModel_org(nn.Module):
             mask = mask + current_layer_adj
 
             midgc = self.midlayer[i]
-            midkey = self.keylayer[i]
-            midquery = self.querylayer[i]
+            #midkey = self.keylayer[i]
+            #midquery = self.querylayer[i]
             x = midgc(torch.cat([x,fea],-1), adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
