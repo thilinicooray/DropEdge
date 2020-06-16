@@ -441,13 +441,13 @@ class GCNModel_org(nn.Module):
             mask = mask + current_layer_adj
 
             midgc = self.midlayer[i]
-            midkey = self.keylayer[i]
+            midkey = self.midlayer_org[i]
             midquery = self.querylayer[i]
             #x = midgc(torch.cat([x_enc, x],-1), adj)
             x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            new_val = midgc(x, self.get_mask(mask))
+            new_val = midkey(x, self.get_mask(mask))
             val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
@@ -483,7 +483,7 @@ class GCNModel_org(nn.Module):
 
         marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze()  - non_loc_sim.squeeze() ),0)
 
-        return marginal_rank_loss
+        return 10 * marginal_rank_loss
 
 class GCNModel_org_org(nn.Module):
     """
