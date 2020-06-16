@@ -302,7 +302,7 @@ class GCNModel(nn.Module):
         return adj_con//(len(self.midlayer) +  1) , mu, logvar, x
 
 
-class GCNModel_global(nn.Module):
+class GCNModel_org(nn.Module):
     """
        The model for the single kind of deepgcn blocks.
 
@@ -460,7 +460,7 @@ class GCNModel_global(nn.Module):
         x = F.log_softmax(x, dim=1)
         return x
 
-class GCNModel_org(nn.Module):
+class GCNModel_org_org(nn.Module):
     """
        The model for the single kind of deepgcn blocks.
 
