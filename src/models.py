@@ -427,6 +427,7 @@ class GCNModel_org(nn.Module):
         val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?'''
 
         val = self.ingc_g(x, self.get_mask(adj))
+        val = F.dropout(val, self.dropout, training=self.training)
         #val_in = val + x
 
         mask = flag_adj
@@ -447,7 +448,7 @@ class GCNModel_org(nn.Module):
             x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            new_val = midkey(x, self.get_mask(mask))
+            new_val = midgc(x, self.get_mask(mask))
             val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
