@@ -427,6 +427,7 @@ class GCNModel_org(nn.Module):
         val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?'''
 
         val = self.ingc_g(x, self.get_mask(adj))
+        val = F.dropout(val, self.dropout, training=self.training)
         #val_in = val + x
 
         mask = flag_adj
