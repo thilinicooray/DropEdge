@@ -448,7 +448,7 @@ class GCNModel_org(nn.Module):
             x = F.dropout(x, self.dropout, training=self.training)
 
             new_val = midgc(x, self.get_mask(mask))
-            val = val + F.dropout(new_val, 0.3, training=self.training)
+            val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
@@ -481,7 +481,7 @@ class GCNModel_org(nn.Module):
                             , local_rep.view(local_rep.size(0), local_rep.size(1), 1))
 
 
-        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze() - non_loc_sim.squeeze() ),0)
+        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze() - non_local_rep.squeeze() ),0)
 
         return 10*marginal_rank_loss
 
