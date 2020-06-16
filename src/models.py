@@ -445,10 +445,10 @@ class GCNModel_org(nn.Module):
             midquery = self.querylayer[i]
             #x = midgc(torch.cat([x_enc, x],-1), adj)
             x = midgc(x, adj)
-            x = val + F.dropout(x, self.dropout, training=self.training)
+            x = F.dropout(x, self.dropout, training=self.training)
 
             new_val = midgc(x, self.get_mask(mask))
-            val = F.dropout(new_val, self.dropout, training=self.training)
+            val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
