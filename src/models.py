@@ -441,10 +441,8 @@ class GCNModel_org(nn.Module):
             mask = mask + current_layer_adj
 
             midgc = self.midlayer[i]
-            midkey = self.midlayer_org[i]
-            midquery = self.querylayer[i]
             #x = midgc(torch.cat([x_enc, x],-1), adj)
-            x = midgc(x+ x*val, adj)
+            x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
             new_val = midgc(x, self.get_mask(mask))
@@ -465,7 +463,7 @@ class GCNModel_org(nn.Module):
         last_rep = x
         #x = self.outgc(torch.cat([x_enc, tot],-1), adj)
 
-        x = self.outgc(x + x*val, adj)
+        x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
         rank_loss = self.rank_loss(x_enc, last_rep, val)
         return x, rank_loss
