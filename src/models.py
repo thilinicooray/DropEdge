@@ -356,7 +356,8 @@ class GCNModel_org(nn.Module):
         self.proj = nn.Linear(nhid+nfeat,nhid)
 
 
-        self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
+        #self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
+        self.ingc = Dense(nfeat, nhid, activation)
         self.midlayer = nn.ModuleList()
         self.midlayer_org = nn.ModuleList()
         self.keylayer = nn.ModuleList()
@@ -451,7 +452,7 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             val_in = val + x
-            #tot = tot + val_in
+            tot = tot + val_in
 
         #print('val, x', x[:5,:5], val[:5,:5])
         x = self.outgc(torch.cat([fea, val_in],-1), adj)
