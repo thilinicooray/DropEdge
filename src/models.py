@@ -409,7 +409,7 @@ class GCNModel_org(nn.Module):
 
     def get_mask(self, adj):
         fully_connected = torch.ones_like(adj).cuda()
-        mask = fully_connected.masked_fill(adj > 0, 0)
+        mask = fully_connected.masked_fill(adj > 0, 0) + torch.eye(adj.size(0)).cuda()
         return mask
 
     def forward(self, fea, adj):
