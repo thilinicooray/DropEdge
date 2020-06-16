@@ -357,7 +357,7 @@ class GCNModel_org(nn.Module):
 
 
         #self.ingc = GraphConvolutionBS(nfeat, nhid, activation, withbn, withloop)
-        self.outgc = Dense(nfeat, nhid, activation)
+        self.ingc = Dense(nfeat, nhid, activation)
         self.midlayer = nn.ModuleList()
         self.midlayer_org = nn.ModuleList()
         self.keylayer = nn.ModuleList()
