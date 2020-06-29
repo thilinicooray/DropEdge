@@ -476,6 +476,7 @@ class GCNModel_org(nn.Module):
 
 
         x = F.log_softmax(x, dim=1)
+        val_final = F.log_softmax(val_final, dim=1)
         rank_loss = self.rank_loss(x_enc, last_rep, val, val_org)
         return x, val_final, rank_loss
 
