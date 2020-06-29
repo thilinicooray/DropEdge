@@ -419,9 +419,6 @@ class GCNModel_org(nn.Module):
 
         x_enc = self.ingc(fea, adj)
 
-        x_org = self.ingc1(fea, adj)
-
-
         x = F.dropout(x_enc, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
         #key = self.key_proj(torch.cat([x,fea],-1))
@@ -469,24 +466,25 @@ class GCNModel_org(nn.Module):
 
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        rank_loss = self.rank_loss(x_org, last_rep, val, val_org)
+        rank_loss = self.rank_loss(x_enc, last_rep, val, val_org)
         return x, rank_loss
 
     def rank_loss(self, org_feat, local_rep, non_local_rep, non_local_org):
         non_loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
                                , non_local_rep.view(non_local_rep.size(0), non_local_rep.size(1), 1))
 
-        '''non_loc_sim_org = torch.bmm(non_local_org.view(non_local_org.size(0), 1, non_local_org.size(1)) what to do for this???
-                                , non_local_rep.view(non_local_rep.size(0), non_local_rep.size(1), 1))'''
+        non_loc_sim_org = torch.bmm(non_local_org.view(non_local_org.size(0), 1, non_local_org.size(1))
+                                , org_feat.view(org_feat.size(0), org_feat.size(1), 1))
 
-        loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
+        loc_sim = torch.bmm(non_local_org.view(non_local_org.size(0), 1, non_local_org.size(1))
                                           , local_rep.view(local_rep.size(0), local_rep.size(1), 1))
 
         margin = torch.bmm(non_local_rep.view(non_local_rep.size(0), 1, non_local_rep.size(1))
                             , local_rep.view(local_rep.size(0), local_rep.size(1), 1))
 
 
-        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze()  - loc_sim.squeeze() + non_loc_sim.squeeze() ),0)
+        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze()  - non_loc_sim.squeeze() ),0) + \
+                             torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), loc_sim.squeeze()  - non_loc_sim_org.squeeze() ),0)
 
         return marginal_rank_loss
 
