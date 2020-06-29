@@ -469,9 +469,15 @@ class GCNModel_org(nn.Module):
         #x = self.outgc(torch.cat([x_enc, tot],-1), adj)
 
         x = self.outgc(x, adj)
+
+        current_layer_adj = torch.mm(mask, flag_adj)
+        mask = mask + current_layer_adj
+        val_final = self.outgc(x, self.get_mask(mask))
+
+
         x = F.log_softmax(x, dim=1)
         rank_loss = self.rank_loss(x_enc, last_rep, val, val_org)
-        return x, rank_loss
+        return x, val_final, rank_loss
 
     def rank_loss(self, org_feat, local_rep, non_local_rep, non_local_org):
         non_loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
@@ -489,7 +495,7 @@ class GCNModel_org(nn.Module):
 
         marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze()  - non_loc_sim.squeeze() ),0)
 
-        return 0*marginal_rank_loss
+        return 5*marginal_rank_loss
 
 class GCNModel_org_org(nn.Module):
     """
