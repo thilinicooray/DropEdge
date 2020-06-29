@@ -448,7 +448,7 @@ class GCNModel_org(nn.Module):
 
             mfb_sign_sqrt = torch.sqrt(F.relu(x)) - torch.sqrt(F.relu(-(x)))
 
-            x = F.normalize(mfb_sign_sqrt)
+            x = x+F.normalize(mfb_sign_sqrt)
 
             new_val = midgc(x, self.get_mask(mask))
             val = val + F.dropout(new_val, self.dropout, training=self.training)
