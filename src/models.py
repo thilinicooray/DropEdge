@@ -438,8 +438,8 @@ class GCNModel_org(nn.Module):
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
-            current_layer_adj = torch.mm(mask, flag_adj)
-            mask = mask + current_layer_adj
+            #current_layer_adj = torch.mm(mask, flag_adj)
+            #mask = mask + current_layer_adj
 
             midgc = self.midlayer[i]
             #x = midgc(torch.cat([x_enc, x],-1), adj)
