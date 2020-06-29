@@ -180,9 +180,9 @@ def train(epoch, train_adj, train_fea, idx_train, val_adj=None, val_fea=None):
         acc_train = accuracy(output, labels[idx_train])
     else:
         loss_nc = F.nll_loss(output[idx_train], labels[idx_train])
-        loss_val = F.nll_loss(val[idx_train], labels[idx_train])
+        #loss_val = F.nll_loss(val[idx_train], labels[idx_train])
 
-        loss_train = loss_nc + rank_loss + loss_val
+        loss_train = loss_nc + rank_loss
         print('loss', loss_nc, rank_loss)
         acc_train = accuracy(output[idx_train], labels[idx_train])
 
