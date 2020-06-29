@@ -448,7 +448,7 @@ class GCNModel_org(nn.Module):
 
             mfb_sign_sqrt = torch.sqrt(F.relu(x)) - torch.sqrt(F.relu(-(x)))
 
-            x = x+F.normalize(mfb_sign_sqrt)
+            x = F.normalize(mfb_sign_sqrt)
 
             new_val = midgc(x, self.get_mask(mask))
             val = val + F.dropout(new_val, self.dropout, training=self.training)
@@ -489,7 +489,7 @@ class GCNModel_org(nn.Module):
 
         marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze()  - non_loc_sim.squeeze() ),0)
 
-        return 5*marginal_rank_loss
+        return 0*marginal_rank_loss
 
 class GCNModel_org_org(nn.Module):
     """
