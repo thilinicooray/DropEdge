@@ -446,10 +446,6 @@ class GCNModel_org(nn.Module):
             x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            '''mfb_sign_sqrt = torch.sqrt(F.relu(x_prev)) - torch.sqrt(F.relu(-(x_prev)))
-
-            x = F.normalize(mfb_sign_sqrt)'''
-
             new_val = midgc(x, self.get_mask(mask))
             val = val + F.dropout(new_val, self.dropout, training=self.training)
 
@@ -469,14 +465,9 @@ class GCNModel_org(nn.Module):
         #x = self.outgc(torch.cat([x_enc, tot],-1), adj)
 
         x = self.outgc(x, adj)
-
-
-
-
         x = F.log_softmax(x, dim=1)
-        val_final = None
         rank_loss = self.rank_loss(x_enc, last_rep, val, val_org)
-        return x, val_final, rank_loss
+        return x, rank_loss
 
     def rank_loss(self, org_feat, local_rep, non_local_rep, non_local_org):
         non_loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
@@ -492,9 +483,10 @@ class GCNModel_org(nn.Module):
                             , local_rep.view(local_rep.size(0), local_rep.size(1), 1))
 
 
-        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze()  - non_loc_sim.squeeze() ),0)
+        marginal_rank_loss = torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), margin.squeeze()  - non_loc_sim.squeeze() ),0) + \
+                             torch.mean(torch.max(torch.zeros(org_feat.size(0)).cuda(), non_loc_sim_org.squeeze()  - loc_sim.squeeze() ),0)
 
-        return 10*marginal_rank_loss
+        return 0* marginal_rank_loss
 
 class GCNModel_org_org(nn.Module):
     """
