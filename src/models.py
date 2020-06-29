@@ -426,7 +426,7 @@ class GCNModel_org(nn.Module):
 
         val = self.attention(key, self.query_proj(x), key, adj, adj) #what is happening?'''
 
-        #val = self.ingc_g(x, self.get_mask(adj))
+        val = self.ingc_g(x, self.get_mask(adj))
         #val_in = val + x
         #val_org = val
 
@@ -438,23 +438,23 @@ class GCNModel_org(nn.Module):
         # mid block connections
         # for i in xrange(len(self.midlayer)):
         for i in range(len(self.midlayer)):
-            #current_layer_adj = torch.mm(mask, flag_adj)
-            #mask = mask + current_layer_adj
+            current_layer_adj = torch.mm(mask, flag_adj)
+            mask = mask + current_layer_adj
 
             midgc = self.midlayer[i]
             #x = midgc(torch.cat([x_enc, x],-1), adj)
             x = midgc(x, adj)
             x = F.dropout(x, self.dropout, training=self.training)
 
-            #new_val = midgc(x, self.get_mask(mask))
-            #val = val + F.dropout(new_val, self.dropout, training=self.training)
+            new_val = midgc(x, self.get_mask(mask))
+            val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
             val = val + self.attention(key, query, key, adj, mask)'''
-            #mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
+            mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
-            #val = F.normalize(mfb_sign_sqrt)
+            val = F.normalize(mfb_sign_sqrt)
             #TODO: gate to decide which amount should come from global and neighbours
 
             #val_in = val + x
