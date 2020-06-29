@@ -358,6 +358,7 @@ class GCNModel_org(nn.Module):
 
         self.ingc_g = GraphConvolutionBS(nhid, nhid, activation, withbn, withloop)
         self.ingc = Dense(nfeat, nhid, activation)
+        self.ingc1 = Dense(nfeat, nhid, activation)
         self.midlayer = nn.ModuleList()
         self.midlayer_org = nn.ModuleList()
         self.keylayer = nn.ModuleList()
@@ -418,6 +419,8 @@ class GCNModel_org(nn.Module):
 
         x_enc = self.ingc(fea, adj)
 
+        x_org = self.ingc1(fea, adj)
+
 
         x = F.dropout(x_enc, self.dropout, training=self.training)
         #adj_con = torch.zeros_like(adj)
@@ -428,6 +431,7 @@ class GCNModel_org(nn.Module):
 
         val = self.ingc_g(x, self.get_mask(adj))
         #val_in = val + x
+        val_org = val
 
         mask = flag_adj
         orgx = x
@@ -465,12 +469,15 @@ class GCNModel_org(nn.Module):
 
         x = self.outgc(x, adj)
         x = F.log_softmax(x, dim=1)
-        rank_loss = self.rank_loss(x_enc, last_rep, val)
+        rank_loss = self.rank_loss(x_org, last_rep, val, val_org)
         return x, rank_loss
 
-    def rank_loss(self, org_feat, local_rep, non_local_rep):
+    def rank_loss(self, org_feat, local_rep, non_local_rep, non_local_org):
         non_loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
                                , non_local_rep.view(non_local_rep.size(0), non_local_rep.size(1), 1))
+
+        '''non_loc_sim_org = torch.bmm(non_local_org.view(non_local_org.size(0), 1, non_local_org.size(1)) what to do for this???
+                                , non_local_rep.view(non_local_rep.size(0), non_local_rep.size(1), 1))'''
 
         loc_sim = torch.bmm(org_feat.view(org_feat.size(0), 1, org_feat.size(1))
                                           , local_rep.view(local_rep.size(0), local_rep.size(1), 1))
