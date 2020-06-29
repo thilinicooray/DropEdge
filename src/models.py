@@ -472,7 +472,7 @@ class GCNModel_org(nn.Module):
 
         current_layer_adj = torch.mm(mask, flag_adj)
         mask = mask + current_layer_adj
-        val_final = self.outgc(x, self.get_mask(mask))
+        val_final = self.outgc(last_rep, self.get_mask(mask))
 
 
         x = F.log_softmax(x, dim=1)
