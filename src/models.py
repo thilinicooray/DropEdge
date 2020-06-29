@@ -462,21 +462,19 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             #val_in = val + x
-            #tot = tot + x
+            tot = tot + x
 
         #print('val, x', x[:5,:5], val[:5,:5])
         last_rep = x
         #x = self.outgc(torch.cat([x_enc, tot],-1), adj)
 
-        x = self.outgc(x, adj)
+        x = self.outgc(tot, adj)
 
-        current_layer_adj = torch.mm(mask, flag_adj)
-        mask = mask + current_layer_adj
-        val_final = self.outgc(last_rep, self.get_mask(mask))
+
 
 
         x = F.log_softmax(x, dim=1)
-        val_final = F.log_softmax(val_final, dim=1)
+        val_final = None
         rank_loss = self.rank_loss(x_enc, last_rep, val, val_org)
         return x, val_final, rank_loss
 
