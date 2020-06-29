@@ -452,9 +452,9 @@ class GCNModel_org(nn.Module):
             '''key = midkey(torch.cat([x,fea],-1))
             query = midquery(x)
             val = val + self.attention(key, query, key, adj, mask)'''
-            mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
+            #mfb_sign_sqrt = torch.sqrt(F.relu(val)) - torch.sqrt(F.relu(-(val)))
 
-            val = F.normalize(mfb_sign_sqrt)
+            #val = F.normalize(mfb_sign_sqrt)
             #TODO: gate to decide which amount should come from global and neighbours
 
             #val_in = val + x
