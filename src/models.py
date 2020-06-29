@@ -462,13 +462,13 @@ class GCNModel_org(nn.Module):
             #TODO: gate to decide which amount should come from global and neighbours
 
             #val_in = val + x
-            tot = tot + x
+            #tot = tot + x
 
         #print('val, x', x[:5,:5], val[:5,:5])
         last_rep = x
         #x = self.outgc(torch.cat([x_enc, tot],-1), adj)
 
-        x = self.outgc(tot, adj)
+        x = self.outgc(x, adj)
 
 
 
