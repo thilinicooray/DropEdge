@@ -444,13 +444,13 @@ class GCNModel_org(nn.Module):
             midgc = self.midlayer[i]
             #x = midgc(torch.cat([x_enc, x],-1), adj)
             x = midgc(x, adj)
-            x_prev = F.dropout(x, self.dropout, training=self.training)
+            x = F.dropout(x, self.dropout, training=self.training)
 
             '''mfb_sign_sqrt = torch.sqrt(F.relu(x_prev)) - torch.sqrt(F.relu(-(x_prev)))
 
             x = F.normalize(mfb_sign_sqrt)'''
 
-            new_val = midgc(x_prev, self.get_mask(mask))
+            new_val = midgc(x, self.get_mask(mask))
             val = val + F.dropout(new_val, self.dropout, training=self.training)
 
             '''key = midkey(torch.cat([x,fea],-1))
